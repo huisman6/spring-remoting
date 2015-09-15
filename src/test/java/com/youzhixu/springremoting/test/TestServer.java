@@ -1,5 +1,4 @@
-package com.youzhixu.springremoting;
-
+package com.youzhixu.springremoting.test;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;

@@ -57,7 +57,6 @@ public class CustomRegistryBean implements ApplicationContextAware {
 
 	private Class<?> findServiceInterface(Object rpcService,
 			Class<? extends Annotation> rpcAnnotation) {
-		System.out.println(rpcService.getClass() + "-class");
 		Class<?> serviceInterface = null;
 		if (AnnotationUtils.isAnnotationDeclaredLocally(Service.class, rpcService.getClass())) {
 			for (Class<?> interfaceClass : rpcService.getClass().getInterfaces()) {
