@@ -1,6 +1,7 @@
 package com.youzhixu.springremoting.service;
 
 import com.youzhixu.springremoting.annotation.RPCService;
+import com.youzhixu.springremoting.constant.Protocol;
 import com.youzhixu.springremoting.model.User;
 
 /**
@@ -13,7 +14,7 @@ import com.youzhixu.springremoting.model.User;
  * @since 1.0.0
  * @Copyright (c) 2015, Lianjia Group All Rights Reserved.
  */
-@RPCService
+@RPCService(protocol = Protocol.HESSIAN)
 public interface UserService {
 	User findById(int userId);
 }

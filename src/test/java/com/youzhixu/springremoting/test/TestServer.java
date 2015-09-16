@@ -1,4 +1,5 @@
 package com.youzhixu.springremoting.test;
+
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
@@ -27,8 +28,8 @@ public class TestServer {
 	private UserService userService;
 
 	@Test
-	public void testDateService() {
-		System.out.println(userService.findById(12));
+	public void testUserSearch() {
+		System.out.println(userService.findById(256));
 	}
 
 	private static Server server;

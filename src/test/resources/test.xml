@@ -4,8 +4,15 @@
   xmlns:context="http://www.springframework.org/schema/context"
   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
-  <bean id="userService" class="org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean">
-    <property name="serviceUrl" value="http://localhost:8080/remoting/com.youzhixu.springremoting.service.UserService" />
-    <property name="serviceInterface" value="com.youzhixu.springremoting.service.UserService" />
-  </bean>
+  
+  <!-- 
+	  <bean id="userService" class="org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean">
+	    <property name="serviceUrl" value="http://localhost:8080/remoting/com.youzhixu.springremoting.service.UserService" />
+	    <property name="serviceInterface" value="com.youzhixu.springremoting.service.UserService" />
+	  </bean>
+   -->
+    <bean id="userService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+	    <property name="serviceUrl" value="http://localhost:8080/remoting/com.youzhixu.springremoting.service.UserService" />
+	    <property name="serviceInterface" value="com.youzhixu.springremoting.service.UserService" />
+	 </bean>
 </beans>

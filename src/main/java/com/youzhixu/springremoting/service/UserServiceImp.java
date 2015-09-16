@@ -20,7 +20,6 @@ public class UserServiceImp implements UserService {
 	@Override
 	public User findById(int userId) {
 		User usr = new User();
-		HttpRequestHandlerServlet 
 		usr.setId(userId);
 		usr.setDesc("测试啊");
 		usr.setUserName("东兴");

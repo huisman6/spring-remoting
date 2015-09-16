@@ -1,4 +1,4 @@
-package com.youzhixu.springremoting.resolve;
+package com.youzhixu.springremoting.exporter;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
@@ -12,29 +12,24 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import com.youzhixu.springremoting.annotation.RPCService;
 
 /**
  * <p>
- *
+ * 动态注册BeanDefinition <br>
+ * 我们扫描所有@service的父类接口(标注@RPCService)，动态将不同的类型（httpinvoker,hessian）的rpc服务暴露出去
  * </p>
  * 
- * @author liuhui
+ * @author huisman
  * @createAt 2015年9月15日 下午4:58:32
  * @since 1.0.0
- * @Copyright (c) 2015, Lianjia Group All Rights Reserved.
+ * @Copyright (c) 2015, Youzhixu.com All Rights Reserved.
  */
-@Component
-public class CustomRegistryBean implements ApplicationContextAware {
-
+public class CustomRegistRpcExporter implements ApplicationContextAware {
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		System.out.println("post process=========>>>");
-		// 查找所有已经注册的bean
 		ConfigurableApplicationContext configurableApplicationContext =
 				(ConfigurableApplicationContext) applicationContext;
 		BeanDefinitionRegistry registry =
@@ -44,11 +39,11 @@ public class CustomRegistryBean implements ApplicationContextAware {
 			Class<?> serviceInterface = findServiceInterface(bean, RPCService.class);
 			if (serviceInterface != null) {
 				GenericBeanDefinition gd = new GenericBeanDefinition();
-				// java field
+				RPCService rpcprotocol = serviceInterface.getAnnotation(RPCService.class);
 				Map<String, Object> params = new HashMap<String, Object>();
 				params.put("service", bean);
 				params.put("serviceInterface", serviceInterface);
-				gd.setBeanClass(HttpInvokerServiceExporter.class);
+				gd.setBeanClass(rpcprotocol.protocol().getProvider());
 				gd.setPropertyValues(new MutablePropertyValues(params));
 				registry.registerBeanDefinition("/" + serviceInterface.getName(), gd);
 			}
