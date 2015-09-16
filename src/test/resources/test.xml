@@ -12,7 +12,7 @@
 	  </bean>
    -->
     <bean id="userService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-	    <property name="serviceUrl" value="http://localhost:8080/remoting/com.youzhixu.springremoting.service.UserService" />
+	    <property name="serviceUrl" value="http://localhost:8080/com.youzhixu.springremoting.service.UserService" />
 	    <property name="serviceInterface" value="com.youzhixu.springremoting.service.UserService" />
 	 </bean>
 </beans>

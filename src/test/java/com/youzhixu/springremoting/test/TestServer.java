@@ -44,7 +44,7 @@ public class TestServer {
 		server.addConnector(connector);
 
 		WebAppContext webAppContext = new WebAppContext();
-		webAppContext.setContextPath("/remoting");
+		webAppContext.setContextPath("/");
 
 		webAppContext.setWar("src/main/webapp");
 
