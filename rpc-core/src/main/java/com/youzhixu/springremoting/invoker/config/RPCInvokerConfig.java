@@ -23,8 +23,12 @@ public class RPCInvokerConfig {
 	 * @since: 1.0.0
 	 * @return
 	 */
-	@Bean(name = "autoConfigRpcInvoker")
-	public static AutoConfigRpcInvoker importInvoker() {
-		return new AutoConfigRpcInvoker();
+//	@Bean(name = "autoConfigRpcInvoker")
+//	public static AutoConfigRpcInvoker importInvoker() {
+//		return new AutoConfigRpcInvoker();
+//	}
+	@Bean(name="autowiredRemotingBeanPostProcessor")
+	public  static AutowiredRemotingBeanPostProcessor customizePostProcessor() {
+		return new AutowiredRemotingBeanPostProcessor();
 	}
 }
