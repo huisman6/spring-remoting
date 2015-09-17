@@ -6,13 +6,15 @@
                       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
   
   <!-- 
-	  <bean id="userService" class="org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean">
-	    <property name="serviceUrl" value="http://localhost:8080/remoting/com.youzhixu.springremoting.service.UserService" />
-	    <property name="serviceInterface" value="com.youzhixu.springremoting.service.UserService" />
-	  </bean>
-   -->
     <bean id="userService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
-	    <property name="serviceUrl" value="http://localhost:8080/com.youzhixu.springremoting.service.UserService" />
-	    <property name="serviceInterface" value="com.youzhixu.springremoting.service.UserService" />
+	    <property name="serviceUrl" value="http://localhost:8080/rpc/com.youzhixu.springremoting.example.spi.UserService" />
+	    <property name="serviceInterface" value="com.youzhixu.springremoting.example.spi.UserService" />
 	 </bean>
+   -->
+   <!-- 
+	  <bean id="userService" class="org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean">
+	    <property name="serviceUrl" value="http://localhost:8080/rpc/com.youzhixu.springremoting.example.spi.UserService" />
+	    <property name="serviceInterface" value="com.youzhixu.springremoting.example.spi.UserService" />
+	  </bean>
+    -->
 </beans>

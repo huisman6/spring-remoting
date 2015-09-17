@@ -15,8 +15,16 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class RPCInvokerConfig {
+	/**
+	 * <p>
+	 * 必须是静态方法
+	 * </p>
+	 * 
+	 * @since: 1.0.0
+	 * @return
+	 */
 	@Bean(name = "autoConfigRpcInvoker")
-	public AutoConfigRpcInvoker importInvoker() {
+	public static AutoConfigRpcInvoker importInvoker() {
 		return new AutoConfigRpcInvoker();
 	}
 }

@@ -1,32 +1,35 @@
 package com.youzhixu.springremoting.invoker.config;
 
-import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.Ordered;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.annotation.Order;
+import org.springframework.core.PriorityOrdered;
+import org.springframework.core.env.Environment;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.stereotype.Service;
+import org.springframework.remoting.caucho.HessianProxyFactoryBean;
+import org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean;
+import org.springframework.util.StringUtils;
 
+import com.youzhixu.springremoting.constant.ServicePath;
 import com.youzhixu.springremoting.exporter.annotation.HessianService;
 import com.youzhixu.springremoting.exporter.annotation.HttpService;
 
 /**
  * <p>
  * 动态注册BeanDefinition <br>
- * 我们扫描所有标注@RPCService或@HessianService的服务接口， 将不同的invoker proxy动态注册
+ * 我们扫描所有标注@RPCService或@HessianService的服务接口， 将不同的invoker proxy动态注册 <br>
+ * 如果需要自定义复杂实现，比如基于服务注册发现来负载均衡，请继承此类。
  * </p>
  * 
  * @author huisman
@@ -34,70 +37,102 @@ import com.youzhixu.springremoting.exporter.annotation.HttpService;
  * @since 1.0.0
  * @Copyright (c) 2015, Youzhixu.com All Rights Reserved.
  */
-@Order(value = Ordered.LOWEST_PRECEDENCE - 20)
-public class AutoConfigRpcInvoker implements ApplicationContextAware {
+public class AutoConfigRpcInvoker implements BeanFactoryAware, PriorityOrdered {
+	private BeanDefinitionRegistry registry;
+
+	/**
+	 * ClassPathScanningCandidateComponentProvider默认不检测接口。。
+	 */
+	static class CustomizeClassPathScanningProvider
+			extends ClassPathScanningCandidateComponentProvider {
+		public CustomizeClassPathScanningProvider(boolean useDefaultFilters) {
+			super(useDefaultFilters);
+		}
+
+		public CustomizeClassPathScanningProvider(boolean useDefaultFilters, Environment environment) {
+			super(useDefaultFilters, environment);
+		}
+
+		/**
+		 * 我们只检测接口
+		 */
+		@Override
+		protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
+			return beanDefinition.getMetadata().isInterface();
+		}
+	}
+
+	protected Class<?> getHttpServiceInvoker() {
+		return HttpInvokerProxyFactoryBean.class;
+	}
+
+
+	protected Class<?> getHessianServiceInvoker() {
+		return HessianProxyFactoryBean.class;
+	}
+
+	protected String getServiceUrl(String appName, Class<?> serviceInterface) {
+		String host = "http://localhost:8080"; //
+		// System.getProperty("rpc." + appName + ".url");
+		if (host == null || host.trim().isEmpty()) {
+			throw new IllegalArgumentException(
+					"app:"
+							+ appName
+							+ ",serviceInterface="
+							+ serviceInterface.getName()
+							+ ",couldn't found rpc."
+							+ appName
+							+ ".url from Spring Environment(System property,System Environment,PropertySource)");
+		}
+		return host + ServicePath.PREFIX + "/" + serviceInterface.getName();
+	}
+
+
+	public void registerBean(Class<?> beanClass) {
+		System.out.println(",bean:" + beanClass);
+		HttpService httpService = beanClass.getAnnotation(HttpService.class);
+		HessianService hessianService = beanClass.getAnnotation(HessianService.class);
+		GenericBeanDefinition gd = new GenericBeanDefinition();
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("serviceInterface", beanClass);
+		if (httpService != null) {
+			params.put("serviceUrl", getServiceUrl(httpService.app(), beanClass));
+			gd.setBeanClass(getHttpServiceInvoker());
+		} else if (hessianService != null) {
+			params.put("serviceUrl", getServiceUrl(hessianService.app(), beanClass));
+			gd.setBeanClass(getHessianServiceInvoker());
+		}
+		gd.setPropertyValues(new MutablePropertyValues(params));
+		registry.registerBeanDefinition(StringUtils.uncapitalize(beanClass.getSimpleName()), gd);
+	}
+
+
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		ConfigurableApplicationContext configurableApplicationContext =
-				(ConfigurableApplicationContext) applicationContext;
-
-		// 扫描所有。实现指定标注的接口。。
-		ClassPathScanningCandidateComponentProvider annotationScanner =
-				new ClassPathScanningCandidateComponentProvider(false,
-						applicationContext.getEnvironment());
-		annotationScanner.addIncludeFilter(new AnnotationTypeFilter(HttpService.class));
-		annotationScanner.addIncludeFilter(new AnnotationTypeFilter(HessianService.class));
-		// 扫描所有classpath
-		Set<BeanDefinition> bd = annotationScanner.findCandidateComponents("");
-		if (bd != null && !bd.isEmpty()) {
-			for (BeanDefinition beanDefinition : bd) {
-				System.out.println(beanDefinition);
-			}
-		}
-	}
-
-	private void registerRPCServcie(Object bean, BeanDefinitionRegistry registry) {
-		Class<?> serviceInterface = findServiceInterface(bean, HttpService.class);
-		if (serviceInterface != null) {
-			GenericBeanDefinition gd = new GenericBeanDefinition();
-			HttpService rpcprotocol = serviceInterface.getAnnotation(HttpService.class);
-			Map<String, Object> params = new HashMap<String, Object>();
-			params.put("service", bean);
-			params.put("serviceInterface", serviceInterface);
-			gd.setBeanClass(rpcprotocol.provider());
-			gd.setPropertyValues(new MutablePropertyValues(params));
-			registry.registerBeanDefinition("/" + serviceInterface.getName(), gd);
-		}
-	}
-
-	private void registerHessianServcie(Object bean, BeanDefinitionRegistry registry) {
-		// maybe other property，customize serialization etc.
-		Class<?> serviceInterface = findServiceInterface(bean, HessianService.class);
-		if (serviceInterface != null) {
-			GenericBeanDefinition gd = new GenericBeanDefinition();
-			HessianService rpcprotocol = serviceInterface.getAnnotation(HessianService.class);
-			Map<String, Object> params = new HashMap<String, Object>();
-			params.put("service", bean);
-			params.put("serviceInterface", serviceInterface);
-			gd.setBeanClass(rpcprotocol.provider());
-			gd.setPropertyValues(new MutablePropertyValues(params));
-			registry.registerBeanDefinition("/" + serviceInterface.getName(), gd);
-		}
-	}
-
-	private Class<?> findServiceInterface(Object rpcService,
-			Class<? extends Annotation> rpcAnnotation) {
-		if (rpcService == null) {
-			return null;
-		}
-		Class<?> serviceInterface = null;
-		if (AnnotationUtils.isAnnotationDeclaredLocally(Service.class, rpcService.getClass())) {
-			for (Class<?> interfaceClass : rpcService.getClass().getInterfaces()) {
-				if (AnnotationUtils.isAnnotationDeclaredLocally(rpcAnnotation, interfaceClass)) {
-					serviceInterface = interfaceClass;
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.registry = (BeanDefinitionRegistry) beanFactory;
+		CustomizeClassPathScanningProvider scanningProvider =
+				new CustomizeClassPathScanningProvider(false);
+		scanningProvider.addIncludeFilter(new AnnotationTypeFilter(HttpService.class));
+		scanningProvider.addIncludeFilter(new AnnotationTypeFilter(HessianService.class));
+		Set<BeanDefinition> bd = scanningProvider.findCandidateComponents("");
+		try {
+			if (bd != null && !bd.isEmpty()) {
+				for (BeanDefinition def : bd) {
+					Class<?> serviceInterface = Class.forName(def.getBeanClassName());
+					registerBean(serviceInterface);
 				}
 			}
+		} catch (ClassNotFoundException e) {
+			throw new IllegalArgumentException(e);
 		}
-		return serviceInterface;
+
 	}
+
+
+	@Override
+	public int getOrder() {
+		return Ordered.HIGHEST_PRECEDENCE - 100;
+	}
+
+
 }

@@ -5,7 +5,9 @@
   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                         http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context.xsd">
   <!-- just scan service provider .... -->
-  <context:component-scan base-package="com.youzhixu.springremoting.example.provider.service"/>
+  <context:component-scan base-package="com.youzhixu.springremoting.example.provider"/>
   <!-- import remoting config -->
   <bean class="com.youzhixu.springremoting.exporter.config.RPCProviderConfig"></bean>
+    <!-- import remoting config -->
+  <bean class="com.youzhixu.springremoting.invoker.config.RPCInvokerConfig"></bean>
 </beans>
