@@ -1,5 +1,7 @@
 package com.youzhixu.springremoting.test;
 
+import java.util.Arrays;
+
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
@@ -12,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.youzhixu.springremoting.service.UserService;
+import com.youzhixu.springremoting.example.spi.UserService;
 
 /**
  * @author huisman
@@ -30,6 +32,7 @@ public class TestServer {
 	@Test
 	public void testUserSearch() {
 		System.out.println(userService.findById(256));
+		System.out.println(Arrays.toString(userService.findAll().toArray()));
 	}
 
 	private static Server server;

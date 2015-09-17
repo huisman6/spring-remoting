@@ -1,4 +1,4 @@
-package com.youzhixu.springremoting.example;
+package com.youzhixu.springremoting.example.spi;
 
 import java.util.List;
 

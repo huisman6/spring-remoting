@@ -1,4 +1,4 @@
-package com.youzhixu.springremoting.exporter;
+package com.youzhixu.springremoting.exporter.config;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;

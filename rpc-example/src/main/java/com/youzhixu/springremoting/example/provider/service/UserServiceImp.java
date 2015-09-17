@@ -1,4 +1,4 @@
-package com.youzhixu.springremoting.service;
+package com.youzhixu.springremoting.example.provider.service;
 
 import java.util.ArrayList;
 import java.util.List;
