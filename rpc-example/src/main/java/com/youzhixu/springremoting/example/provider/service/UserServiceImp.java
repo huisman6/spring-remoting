@@ -10,10 +10,12 @@ import com.youzhixu.springremoting.example.provider.model.User;
 import com.youzhixu.springremoting.example.spi.UserService;
 
 /**
+ * 服务实现
+ * 
  * @author huisman
  * @createAt 2015年9月15日 下午3:11:30
  * @since 1.0.0
- * @Copyright (c) 2015, Lianjia Group All Rights Reserved.
+ * @Copyright (c) 2015, Youzhixu.com All Rights Reserved.
  */
 @Service
 public class UserServiceImp implements UserService {

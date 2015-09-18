@@ -18,6 +18,8 @@ import com.youzhixu.springremoting.example.spi.UserService;
 import com.youzhixu.springremoting.invoker.annotation.Remoting;
 
 /**
+ * test作为服务消费者注入需要的service
+ * 
  * @author huisman
  * @createAt 2015年9月15日 下午4:47:20
  * @since 1.0.0
@@ -43,19 +45,14 @@ public class TestServer {
 	@BeforeClass
 	public static void startWebapp() throws Exception {
 		server = new Server();
-
 		Connector connector = new SelectChannelConnector();
 		connector.setPort(8080);
-
 		server.addConnector(connector);
-
 		WebAppContext webAppContext = new WebAppContext();
 		webAppContext.setContextPath("/");
-
 		webAppContext.setWar("src/main/webapp");
 
 		server.setHandler(webAppContext);
-
 		server.start();
 	}
 

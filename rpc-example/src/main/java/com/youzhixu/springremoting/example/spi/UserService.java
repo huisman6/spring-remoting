@@ -14,7 +14,7 @@ import com.youzhixu.springremoting.exporter.annotation.HttpService;
  * @author huisman
  * @createAt 2015年9月15日 下午3:05:22
  * @since 1.0.0
- * @Copyright (c) 2015, Lianjia Group All Rights Reserved.
+ * @Copyright (c) 2015, Youzhixu.com All Rights Reserved.
  */
 @HttpService(app = "user")
 public interface UserService {
