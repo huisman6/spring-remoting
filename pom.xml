@@ -99,5 +99,6 @@
     	<module>rpc-core</module>
     	<module>rpc-example</module>
     	<module>rpc-simple</module>
+    	<module>rpc-netflix</module>
     </modules>
 </project>
