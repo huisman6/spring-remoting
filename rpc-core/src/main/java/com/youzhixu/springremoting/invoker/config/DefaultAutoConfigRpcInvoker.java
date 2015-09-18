@@ -37,7 +37,8 @@ import com.youzhixu.springremoting.exporter.annotation.HttpService;
  * @since 1.0.0
  * @Copyright (c) 2015, Youzhixu.com All Rights Reserved.
  */
-public class AutoConfigRpcInvoker implements BeanFactoryAware, PriorityOrdered {
+@Deprecated
+public class DefaultAutoConfigRpcInvoker implements BeanFactoryAware, PriorityOrdered {
 	private BeanDefinitionRegistry registry;
 
 	/**
@@ -89,7 +90,6 @@ public class AutoConfigRpcInvoker implements BeanFactoryAware, PriorityOrdered {
 
 
 	public void registerBean(Class<?> beanClass) {
-		System.out.println(",bean:" + beanClass);
 		HttpService httpService = beanClass.getAnnotation(HttpService.class);
 		HessianService hessianService = beanClass.getAnnotation(HessianService.class);
 		GenericBeanDefinition gd = new GenericBeanDefinition();

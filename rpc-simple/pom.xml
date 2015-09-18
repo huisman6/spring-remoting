@@ -5,16 +5,15 @@
     <artifactId>rpc</artifactId>
     <version>1.0.3</version>
   </parent>
-  <artifactId>rpc-core</artifactId>
-  <name>rpc-core</name>
-  <description>using spring httpinvoker to manage rpc-calls</description>
+  <artifactId>rpc-simple</artifactId>
+  <name>rpc-simple</name>
   
   <dependencies>
- 	 <dependency>  
-	    <groupId>com.caucho</groupId>  
-	    <artifactId>hessian</artifactId>  
-	    <version>${hessian.version}</version> 
-	  </dependency> 
+	 <dependency>
+	  <groupId>com.youzhixu.springremoting</groupId>
+	  <artifactId>rpc-core</artifactId>
+	  <version>${project.version}</version>
+	</dependency>
   </dependencies>
    <!--部署jar文件到仓库-->
     <distributionManagement>

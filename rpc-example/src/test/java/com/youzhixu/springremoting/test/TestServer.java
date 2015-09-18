@@ -10,7 +10,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -37,6 +36,7 @@ public class TestServer {
 		System.out.println(userService.findById(256));
 		System.out.println(Arrays.toString(userService.findAll().toArray()));
 	}
+
 
 	private static Server server;
 
