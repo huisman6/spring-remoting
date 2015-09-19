@@ -33,11 +33,13 @@ public class SimpleInvokerAutowiredInterceptor implements AutowiredAnnotedTypeIn
 	@Override
 	public Object resolveAutowiredValue(Class<?> autowiredType, Environment env) {
 		HttpService httpService = autowiredType.getAnnotation(HttpService.class);
-		HessianService hessianService = autowiredType.getAnnotation(HessianService.class);
 		if (httpService != null) {
-			return createHttpInvokerBean(httpService.app(), autowiredType, env);
-		} else if (hessianService != null) {
-			return createHessianInvokerBean(hessianService.app(), autowiredType, env);
+			return createHttpInvokerBean(httpService.value(), autowiredType, env);
+		} 
+		
+		HessianService hessianService = autowiredType.getAnnotation(HessianService.class);
+		if (hessianService != null) {
+			return createHessianInvokerBean(hessianService.value(), autowiredType, env);
 		}
 		return null;
 	}

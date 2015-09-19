@@ -11,6 +11,8 @@ package com.youzhixu.springremoting.netflix.config;
 
 public class Test {
 	public void test(){
-		org.springframework.cloud.client.CommonsClientAutoConfiguration
 	}
 }
+
+
+

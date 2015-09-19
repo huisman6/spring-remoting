@@ -19,6 +19,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
@@ -47,8 +48,8 @@ import com.youzhixu.springremoting.scanner.CustomizeAssignableTypeFilter;
  * @createAt 2015年9月17日 下午11:12:16
  * @Copyright (c) 2015, Dooioo All Rights Reserved.
  */
-public class CustomizeAutowiredBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter
-		implements
+public class AutowiredRPCServiceBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter
+		implements InitializingBean,
 			PriorityOrdered,
 			ApplicationContextAware {
 	private final Log logger = LogFactory.getLog(getClass());
@@ -68,7 +69,13 @@ public class CustomizeAutowiredBeanPostProcessor extends InstantiationAwareBeanP
 	 */
 	private final List<AutowiredAnnotedTypeInterceptor> interceptors = new ArrayList<>(6);
 
-	public CustomizeAutowiredBeanPostProcessor() {
+	public AutowiredRPCServiceBeanPostProcessor() {
+		//default 
+		this.addCustomizedAnnotation(Remoting.class);
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
 		if (logger.isInfoEnabled()) {
 			logger.info("正在扫描==================》》classpath for AutowiredAnnotedTypeInterceptor: basePackage="
 					+ interceptorBasePackage);
@@ -108,14 +115,13 @@ public class CustomizeAutowiredBeanPostProcessor extends InstantiationAwareBeanP
 				}
 			} else {
 				if (logger.isWarnEnabled()) {
-					logger.warn("===========>>> couldn't found AutowiredAnnotedTypeInterceptor subclasses.");
+					logger.warn("===========>>> couldn't found ServiceExporterRegistryInterceptor subclasses.");
 				}
 			}
 
 		}
-		this.addCustomizedAnnotation(Remoting.class);
 	}
-
+	
 	/**
 	 * <p>
 	 * 添加自定义注入的标注
@@ -126,7 +132,7 @@ public class CustomizeAutowiredBeanPostProcessor extends InstantiationAwareBeanP
 	 */
 	public void addCustomizedAnnotation(Class<? extends Annotation> clazz) {
 		if (clazz == null) {
-			throw new IllegalArgumentException("");
+			throw new IllegalArgumentException("annotation is null");
 		}
 		this.autowiredAnnotationTypes.add(clazz);
 	}

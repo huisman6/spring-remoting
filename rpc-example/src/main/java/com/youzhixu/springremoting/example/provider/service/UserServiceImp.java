@@ -33,8 +33,9 @@ public class UserServiceImp implements UserService {
 	public List<User> findAll() {
 		// just do it
 		ThreadLocalRandom tlr = ThreadLocalRandom.current();
-		int count = tlr.nextInt(3, 120);
+		int count = tlr.nextInt(3, 200);
 		List<User> userList = new ArrayList<>(count);
+		userList.add(new User(count, "总共生成user："+count, "统计信息"));
 		for (int i = 0; i < count; i++) {
 			int id = tlr.nextInt(1, 999999);
 			userList.add(new User(id, "名字啊：" + id, id + "--我是描述啊啊啊啊啊"));

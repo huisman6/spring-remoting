@@ -18,17 +18,17 @@ import com.youzhixu.springremoting.example.spi.UserService;
 import com.youzhixu.springremoting.invoker.annotation.Remoting;
 
 /**
- * test作为服务消费者注入需要的service
- * 
+ * test作为服务消费者注入需要的service<br>
+ * 模拟作为客户端请求服务提供方
  * @author huisman
  * @createAt 2015年9月15日 下午4:47:20
  * @since 1.0.0
  * @Copyright (c) 2015, Youzhixu.com All Rights Reserved.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "classpath:test.xml")
+@ContextConfiguration(locations = "classpath:consumer-applicationContext.xml")
 @Component
-public class TestServer {
+public class ConsumerTest {
 
 	@Remoting
 	private UserService userService;
@@ -40,14 +40,15 @@ public class TestServer {
 	}
 
 
+	//客户端
 	private static Server server;
-
 	@BeforeClass
 	public static void startWebapp() throws Exception {
 		server = new Server();
 		Connector connector = new SelectChannelConnector();
 		connector.setPort(8080);
 		server.addConnector(connector);
+		
 		WebAppContext webAppContext = new WebAppContext();
 		webAppContext.setContextPath("/");
 		webAppContext.setWar("src/main/webapp");

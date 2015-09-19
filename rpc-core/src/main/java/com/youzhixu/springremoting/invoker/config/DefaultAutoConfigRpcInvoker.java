@@ -96,10 +96,10 @@ public class DefaultAutoConfigRpcInvoker implements BeanFactoryAware, PriorityOr
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("serviceInterface", beanClass);
 		if (httpService != null) {
-			params.put("serviceUrl", getServiceUrl(httpService.app(), beanClass));
+			params.put("serviceUrl", getServiceUrl(httpService.value(), beanClass));
 			gd.setBeanClass(getHttpServiceInvoker());
 		} else if (hessianService != null) {
-			params.put("serviceUrl", getServiceUrl(hessianService.app(), beanClass));
+			params.put("serviceUrl", getServiceUrl(hessianService.toString(), beanClass));
 			gd.setBeanClass(getHessianServiceInvoker());
 		}
 		gd.setPropertyValues(new MutablePropertyValues(params));

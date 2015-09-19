@@ -33,7 +33,7 @@ public interface AutowiredAnnotedTypeInterceptor extends Ordered {
 
 	/**
 	 * <p>
-	 * 是否可以接收此种类型的求值
+	 * 是否可以处理此种类型(annotation,Class)的注入
 	 * </p>
 	 * 
 	 * @since: 1.0.0

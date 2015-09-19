@@ -15,8 +15,8 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class RPCProviderConfig {
-	@Bean(name = "autoConfigRpcExporter")
-	public AutoConfigRpcExporter exportService() {
-		return new AutoConfigRpcExporter();
+	@Bean(name="ServiceExporterBeanPostProcessor")
+	public static  ServiceExporterBeanPostProcessor createExporterbeanPostProcessor(){
+		return new ServiceExporterBeanPostProcessor();
 	}
 }

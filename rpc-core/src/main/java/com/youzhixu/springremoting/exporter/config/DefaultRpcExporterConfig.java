@@ -14,6 +14,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.Order;
+import org.springframework.remoting.caucho.HessianServiceExporter;
+import org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter;
 import org.springframework.stereotype.Service;
 
 import com.youzhixu.springremoting.constant.ServicePath;
@@ -31,8 +33,9 @@ import com.youzhixu.springremoting.exporter.annotation.HttpService;
  * @since 1.0.0
  * @Copyright (c) 2015, Youzhixu.com All Rights Reserved.
  */
+@Deprecated
 @Order(value = Ordered.LOWEST_PRECEDENCE - 30)
-public class AutoConfigRpcExporter implements ApplicationContextAware {
+public class DefaultRpcExporterConfig implements ApplicationContextAware {
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		ConfigurableApplicationContext configurableApplicationContext =
@@ -54,11 +57,11 @@ public class AutoConfigRpcExporter implements ApplicationContextAware {
 		Class<?> serviceInterface = findServiceInterface(bean, HttpService.class);
 		if (serviceInterface != null) {
 			GenericBeanDefinition gd = new GenericBeanDefinition();
-			HttpService rpcprotocol = serviceInterface.getAnnotation(HttpService.class);
+			//HttpService rpcprotocol = serviceInterface.getAnnotation(HttpService.class);
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("service", bean);
 			params.put("serviceInterface", serviceInterface);
-			gd.setBeanClass(rpcprotocol.provider());
+			gd.setBeanClass(HttpInvokerServiceExporter.class);
 			gd.setPropertyValues(new MutablePropertyValues(params));
 			registry.registerBeanDefinition(ServicePath.PREFIX + "/" + serviceInterface.getName(),
 					gd);
@@ -70,11 +73,11 @@ public class AutoConfigRpcExporter implements ApplicationContextAware {
 		Class<?> serviceInterface = findServiceInterface(bean, HessianService.class);
 		if (serviceInterface != null) {
 			GenericBeanDefinition gd = new GenericBeanDefinition();
-			HessianService rpcprotocol = serviceInterface.getAnnotation(HessianService.class);
+//			HessianService rpcprotocol = serviceInterface.getAnnotation(HessianService.class);
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("service", bean);
 			params.put("serviceInterface", serviceInterface);
-			gd.setBeanClass(rpcprotocol.provider());
+			gd.setBeanClass(HessianServiceExporter.class);
 			gd.setPropertyValues(new MutablePropertyValues(params));
 			registry.registerBeanDefinition(ServicePath.PREFIX + "/" + serviceInterface.getName(),
 					gd);
