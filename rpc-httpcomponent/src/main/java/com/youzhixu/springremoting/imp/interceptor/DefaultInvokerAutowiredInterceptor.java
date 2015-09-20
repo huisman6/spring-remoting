@@ -2,6 +2,7 @@ package com.youzhixu.springremoting.imp.interceptor;
 
 import java.lang.annotation.Annotation;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
 import org.springframework.remoting.caucho.HessianProxyFactoryBean;
@@ -10,8 +11,10 @@ import org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean;
 import com.youzhixu.springremoting.constant.ServicePath;
 import com.youzhixu.springremoting.exporter.annotation.HessianService;
 import com.youzhixu.springremoting.exporter.annotation.HttpService;
+import com.youzhixu.springremoting.imp.factory.AppHttpInvokerProxyFactoryBean;
 import com.youzhixu.springremoting.interceptor.AutowiredAnnotedTypeInterceptor;
 import com.youzhixu.springremoting.invoker.annotation.Remoting;
+import com.youzhixu.springremoting.url.UrlResolver;
 
 /**
  * <p>
@@ -22,8 +25,7 @@ import com.youzhixu.springremoting.invoker.annotation.Remoting;
  * @createAt 2015年9月20日 下午12:16:08
  * @Copyright (c) 2015,Youzhixu.com Rights Reserved. 
  */
-public class DefaultInvokerAutowiredInterceptor implements AutowiredAnnotedTypeInterceptor,EnvironmentAware{
-	private Environment env;
+public class DefaultInvokerAutowiredInterceptor implements AutowiredAnnotedTypeInterceptor{
 	@Override
 	public int getOrder() {
 		return 0;
@@ -43,12 +45,6 @@ public class DefaultInvokerAutowiredInterceptor implements AutowiredAnnotedTypeI
 		return null;
 	}
 
-	
-	@Override
-	public void setEnvironment(Environment environment) {
-		this.env=environment;
-	}
-
 	/**
 	 * <p>
 	 * 创建@HttpService标准的rpc invoker 代理
@@ -60,7 +56,7 @@ public class DefaultInvokerAutowiredInterceptor implements AutowiredAnnotedTypeI
 	 * @since: 1.0.0
 	 */
 	protected Object createHttpInvokerBean(String appName, Class<?> serviceInterface) {
-		HttpInvokerProxyFactoryBean hp = new HttpInvokerProxyFactoryBean();
+		AppHttpInvokerProxyFactoryBean hp = new AppHttpInvokerProxyFactoryBean(appName);
 		hp.setServiceInterface(serviceInterface);
 		hp.setServiceUrl(getServiceUrl(appName, serviceInterface));
 		hp.afterPropertiesSet();
@@ -85,19 +81,18 @@ public class DefaultInvokerAutowiredInterceptor implements AutowiredAnnotedTypeI
 		return hp.getObject();
 	}
 
+	/**
+	  * <p>
+	  *  使用虚拟host,交给UrlResolver解析
+	  * </p> 
+	  * @See {@link UrlResolver}
+	  * @param appName
+	  * @param serviceInterface
+	  * @return
+	  * @since: 1.0.0
+	 */
 	private String getServiceUrl(String appName, Class<?> serviceInterface) {
-		String host = this.env.getProperty("rpc." + appName + ".url");
-		if (host == null || host.trim().isEmpty()) {
-			throw new IllegalArgumentException(
-					"app:"
-							+ appName
-							+ ",serviceInterface="
-							+ serviceInterface.getName()
-							+ ",couldn't found rpc."
-							+ appName
-							+ ".url from Spring Environment(System property,System Environment,PropertySource)");
-		}
-		return host + ServicePath.PREFIX + "/" + serviceInterface.getName();
+		return "rpc://"+appName+ServicePath.PREFIX + "/" + serviceInterface.getName();
 	}
 
 

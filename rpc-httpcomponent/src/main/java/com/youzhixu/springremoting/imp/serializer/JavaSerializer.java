@@ -28,15 +28,19 @@ public class JavaSerializer implements com.youzhixu.springremoting.serialization
 	}
 
 	@Override
-	public void writeObject(OutputStream out, Object obj) throws Exception {
+	public void writeObject(OutputStream out, Object obj) throws IOException {
 		 ObjectOutputStream baos=new ObjectOutputStream(out);
 		 baos.writeObject(obj);
 	}
 
 	@Override
-	public Object readObject(InputStream is) throws Exception {
+	public Object readObject(InputStream is) throws IOException{
 		 ObjectInputStream ois=new ObjectInputStream(is);
-		return ois.readObject();
+		 try {
+			 return ois.readObject();
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
 	}
 
 }

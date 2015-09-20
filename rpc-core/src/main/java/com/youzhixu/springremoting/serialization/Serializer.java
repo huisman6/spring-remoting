@@ -1,5 +1,6 @@
 package com.youzhixu.springremoting.serialization;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -32,7 +33,7 @@ public interface Serializer {
 	  * @param obj
 	  * @since: 1.0.0
 	 */
-	void writeObject(OutputStream out,Object obj) throws Exception;
+	void writeObject(OutputStream out,Object obj) throws IOException;
     /**
       * <p>
       *  从流中读取对象,实现类无需关闭流，调用方负责
@@ -41,7 +42,7 @@ public interface Serializer {
       * @return
       * @since: 1.0.0
      */
-    Object readObject(InputStream is) throws Exception;
+    Object readObject(InputStream is) throws IOException;
 }
 
 
