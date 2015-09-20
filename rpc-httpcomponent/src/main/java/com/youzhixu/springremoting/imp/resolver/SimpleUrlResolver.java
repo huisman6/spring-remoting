@@ -30,7 +30,7 @@ public class SimpleUrlResolver implements UrlResolver{
 		this.env = env;
 	}
 	@Override
-	public String resolveHost(String servcieUrl) {
+	public String resolveUrl(String servcieUrl) {
 		if (!resolvedHosts.containsKey(servcieUrl)) {
 			String actualUrl=null;
 			synchronized (lock) {

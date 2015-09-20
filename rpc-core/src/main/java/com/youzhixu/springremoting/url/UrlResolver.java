@@ -1,7 +1,5 @@
 package com.youzhixu.springremoting.url;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 
 /**
  * <p>
@@ -21,7 +19,7 @@ public interface UrlResolver {
 	  * @return
 	  * @since: 1.0.0
 	 */
-	String resolveHost(String serviceUrl);	
+	String resolveUrl(String serviceUrl);	
 }
 
 

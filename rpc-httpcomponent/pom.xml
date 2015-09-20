@@ -17,6 +17,11 @@
 	  <artifactId>httpclient</artifactId>
 	  <version>4.5.1</version>
 	</dependency>
+	<dependency>
+		 <groupId>aopalliance</groupId>
+		<artifactId>aopalliance</artifactId>
+		<version>1.0</version>
+	</dependency>
   </dependencies>
    <!--部署jar文件到仓库-->
     <distributionManagement>
