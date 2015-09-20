@@ -3,7 +3,6 @@ package com.youzhixu.springremoting.interceptor;
 import java.lang.annotation.Annotation;
 
 import org.springframework.core.Ordered;
-import org.springframework.core.env.Environment;
 
 /**
  * <p>
@@ -22,7 +21,7 @@ public interface ServiceExporterRegistryInterceptor  extends Ordered {
 	  * @return
 	  * @since: 1.0.0
 	 */
-	Object createtServcieExporter(Class<?> servcieInterface,Object serviceProvider, Environment env);
+	Object resolveServcieExporter(Class<?> servcieInterface,Object serviceProvider);
 
 	/**
 	 * @since: 1.0.0

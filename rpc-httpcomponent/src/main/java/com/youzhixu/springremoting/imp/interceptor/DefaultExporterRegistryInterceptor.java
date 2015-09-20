@@ -1,4 +1,4 @@
-package com.youzhixu.springremoting.simple;
+package com.youzhixu.springremoting.imp.interceptor;
 
 import java.lang.annotation.Annotation;
 
@@ -11,32 +11,35 @@ import com.youzhixu.springremoting.exporter.annotation.HttpService;
 import com.youzhixu.springremoting.interceptor.ServiceExporterRegistryInterceptor;
 
 /**
+ * <p>
+ *  默认实现
+ * </p> 
  * @author huisman 
  * @since 1.0.0
- * @createAt 2015年9月19日 下午5:34:30
+ * @createAt 2015年9月20日 下午12:19:12
  * @Copyright (c) 2015,Youzhixu.com Rights Reserved. 
  */
-public class SimpleServiceExporterInterceptor  implements ServiceExporterRegistryInterceptor{
-
+public class DefaultExporterRegistryInterceptor implements ServiceExporterRegistryInterceptor{
 	@Override
 	public int getOrder() {
 		return 0;
 	}
 
 	@Override
-	public Object createtServcieExporter(Class<?> servcieInterface, Object serviceProvider,
-			Environment env) {
+	public Object resolveServcieExporter(Class<?> servcieInterface, Object serviceProvider) {
 		HttpService httpService=servcieInterface.getAnnotation(HttpService.class);
 		if (httpService !=null) {
-			return createHttpServcieExporter(serviceProvider, servcieInterface, env);
+			return createHttpServcieExporter(serviceProvider, servcieInterface);
 		}
 		HessianService hessianService=servcieInterface.getAnnotation(HessianService.class);
 		if (hessianService !=null) {
-			return createHessianServcieExporter(serviceProvider, servcieInterface, env);
+			return createHessianServcieExporter(serviceProvider, servcieInterface);
 		}
 		return null;
 	}
 
+	
+	
 	@Override
 	public boolean accept(Annotation[] memberAnnotations, Class<?> servcieInterface) {
 		if (memberAnnotations == null || memberAnnotations.length == 0) {
@@ -49,7 +52,7 @@ public class SimpleServiceExporterInterceptor  implements ServiceExporterRegistr
 		return false;
 	}
 	
-	private Object createHttpServcieExporter(Object bean,Class<?> servcieInterface,Environment env ) {
+	private Object createHttpServcieExporter(Object bean,Class<?> servcieInterface) {
 		 HttpInvokerServiceExporter exporter=new HttpInvokerServiceExporter();
 		 exporter.setService(bean);
 		 exporter.setServiceInterface(servcieInterface);
@@ -57,7 +60,7 @@ public class SimpleServiceExporterInterceptor  implements ServiceExporterRegistr
 		 return exporter;
 	}
 
-	private Object createHessianServcieExporter(Object bean,Class<?> servcieInterface,Environment env) {
+	private Object createHessianServcieExporter(Object bean,Class<?> servcieInterface) {
 		HessianServiceExporter exporter=new HessianServiceExporter();
 		exporter.setService(bean);
 		exporter.setServiceInterface(servcieInterface);
@@ -67,5 +70,4 @@ public class SimpleServiceExporterInterceptor  implements ServiceExporterRegistr
 
 
 }
-
 

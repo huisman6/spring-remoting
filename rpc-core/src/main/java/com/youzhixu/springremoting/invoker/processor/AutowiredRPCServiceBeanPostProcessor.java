@@ -1,4 +1,4 @@
-package com.youzhixu.springremoting.invoker.config;
+package com.youzhixu.springremoting.invoker.processor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
@@ -19,24 +19,21 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
-import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.youzhixu.springremoting.interceptor.AutowiredAnnotedTypeInterceptor;
 import com.youzhixu.springremoting.invoker.annotation.Remoting;
-import com.youzhixu.springremoting.scanner.ClassPathTypeScanner;
-import com.youzhixu.springremoting.scanner.CustomizeAssignableTypeFilter;
 
 /**
  * <p>
@@ -49,79 +46,56 @@ import com.youzhixu.springremoting.scanner.CustomizeAssignableTypeFilter;
  * @Copyright (c) 2015, Dooioo All Rights Reserved.
  */
 public class AutowiredRPCServiceBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter
-		implements InitializingBean,
-			PriorityOrdered,
-			ApplicationContextAware {
+		implements BeanFactoryAware,InitializingBean,PriorityOrdered{
 	private final Log logger = LogFactory.getLog(getClass());
 
 	private final Set<Class<? extends Annotation>> autowiredAnnotationTypes =
 			new LinkedHashSet<Class<? extends Annotation>>();
 	private final Map<String, InjectionMetadata> injectionMetadataCache =
 			new ConcurrentHashMap<String, InjectionMetadata>(64);
-	private ApplicationContext applicationContext;
+	private ConfigurableListableBeanFactory beanFactory;
 	/**
-	 * 当我们查找AutowiredAnnotedTypeInterceptor的所有实现类时，扫描的路径
+	 * 注入字段求值时待调用的拦截器。。
 	 */
-	private String interceptorBasePackage = "com.youzhixu.springremoting";
-
-	/**
-	 * 注入字段求值时。。
-	 */
-	private final List<AutowiredAnnotedTypeInterceptor> interceptors = new ArrayList<>(6);
+	private final List<AutowiredAnnotedTypeInterceptor> interceptors=new ArrayList<>(2);
 
 	public AutowiredRPCServiceBeanPostProcessor() {
 		//default 
 		this.addCustomizedAnnotation(Remoting.class);
 	}
-
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if (logger.isInfoEnabled()) {
-			logger.info("正在扫描==================》》classpath for AutowiredAnnotedTypeInterceptor: basePackage="
-					+ interceptorBasePackage);
-			ClassPathTypeScanner pathTypeScanner = new ClassPathTypeScanner();
-			pathTypeScanner.addIncludeFilter(new CustomizeAssignableTypeFilter(
-					AutowiredAnnotedTypeInterceptor.class));
-			Set<BeanDefinition> definitions =
-					pathTypeScanner.findCandidateComponents(interceptorBasePackage);
-			if (definitions != null && !definitions.isEmpty()) {
-				try {
-					// 我们开始实例化数据
-					for (BeanDefinition bd : definitions) {
-						interceptors.add((AutowiredAnnotedTypeInterceptor) ClassUtils.forName(
-								bd.getBeanClassName(),
-								AutowiredAnnotedTypeInterceptor.class.getClassLoader())
-								.newInstance());
-
-					}
-					Collections.sort(interceptors,
-							new Comparator<AutowiredAnnotedTypeInterceptor>() {
-								@Override
-								public int compare(AutowiredAnnotedTypeInterceptor o1,
-										AutowiredAnnotedTypeInterceptor o2) {
-									return Integer.compare(o2.getOrder(), o1.getOrder());
-								}
-
-							});
-					if (logger.isInfoEnabled()) {
-						for (AutowiredAnnotedTypeInterceptor it : interceptors) {
-							logger.info("resolve AutowiredAnnotedTypeInterceptor:" + it.getClass()
-									+ ",order=" + it.getOrder());
-						}
-					}
-				} catch (InstantiationException | IllegalAccessException | ClassNotFoundException
-						| LinkageError e) {
-					throw new IllegalStateException(e);
-				}
-			} else {
-				if (logger.isWarnEnabled()) {
-					logger.warn("===========>>> couldn't found ServiceExporterRegistryInterceptor subclasses.");
+			//we found all Sub interceptors
+			Map<String,AutowiredAnnotedTypeInterceptor> allFoundInterceptors=this.beanFactory.getBeansOfType(AutowiredAnnotedTypeInterceptor.class);
+			if (allFoundInterceptors != null &&  !allFoundInterceptors.isEmpty()) {
+				for (AutowiredAnnotedTypeInterceptor sub : allFoundInterceptors.values()) {
+					this.interceptors.add(sub);
 				}
 			}
+			if (this.interceptors.isEmpty()) {
+				throw new IllegalStateException("找不到AutowiredAnnotedTypeInterceptor.");
+			}
+			Collections.sort(this.interceptors,
+					new Comparator<AutowiredAnnotedTypeInterceptor>() {
+						@Override
+						public int compare(AutowiredAnnotedTypeInterceptor o1,
+								AutowiredAnnotedTypeInterceptor o2) {
+							return Integer.compare(o2.getOrder(), o1.getOrder());
+						}
 
-		}
+					});
+				if (logger.isInfoEnabled()) {
+					for (AutowiredAnnotedTypeInterceptor it : interceptors) {
+						logger.info("resolve AutowiredAnnotedTypeInterceptor:" + it.getClass()
+								+ ",order=" + it.getOrder());
+					}
+				}
 	}
-	
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory=(ConfigurableListableBeanFactory)beanFactory;
+	}
+
 	/**
 	 * <p>
 	 * 添加自定义注入的标注
@@ -142,11 +116,6 @@ public class AutowiredRPCServiceBeanPostProcessor extends InstantiationAwareBean
 	@Override
 	public int getOrder() {
 		return Ordered.LOWEST_PRECEDENCE - 10;
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
 	}
 
 	@Override
@@ -247,8 +216,7 @@ public class AutowiredRPCServiceBeanPostProcessor extends InstantiationAwareBean
 							// 处理此种类型,我们只查找第一个找到可以处理的
 							if (interceptor.accept(field.getDeclaredAnnotations(), field.getType())) {
 								value =
-										interceptor.resolveAutowiredValue(field.getType(),
-												applicationContext.getEnvironment());
+										interceptor.resolveAutowiredValue(field.getType());
 								break;
 							}
 						}

@@ -3,7 +3,6 @@ package com.youzhixu.springremoting.interceptor;
 import java.lang.annotation.Annotation;
 
 import org.springframework.core.Ordered;
-import org.springframework.core.env.Environment;
 
 
 /**
@@ -29,7 +28,7 @@ public interface AutowiredAnnotedTypeInterceptor extends Ordered {
 	 * @param environment spring environment
 	 * @return actual resolved value
 	 */
-	Object resolveAutowiredValue(Class<?> autowiredType, Environment env);
+	Object resolveAutowiredValue(Class<?> autowiredType);
 
 	/**
 	 * <p>

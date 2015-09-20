@@ -1,4 +1,4 @@
-package com.youzhixu.springremoting.invoker.config;
+package com.youzhixu.springremoting.invoker.processor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +38,7 @@ import com.youzhixu.springremoting.exporter.annotation.HttpService;
  * @Copyright (c) 2015, Youzhixu.com All Rights Reserved.
  */
 @Deprecated
-public class DefaultAutoConfigRpcInvoker implements BeanFactoryAware, PriorityOrdered {
+public class DefaultRpcInvokerProcessor implements BeanFactoryAware, PriorityOrdered {
 	private BeanDefinitionRegistry registry;
 
 	/**

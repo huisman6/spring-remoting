@@ -35,7 +35,7 @@ import com.youzhixu.springremoting.exporter.annotation.HttpService;
  */
 @Deprecated
 @Order(value = Ordered.LOWEST_PRECEDENCE - 30)
-public class DefaultRpcExporterConfig implements ApplicationContextAware {
+public class DefaultRpcExporterProcessor implements ApplicationContextAware {
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		ConfigurableApplicationContext configurableApplicationContext =

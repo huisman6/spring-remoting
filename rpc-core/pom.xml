@@ -13,7 +13,7 @@
  	 <dependency>  
 	    <groupId>com.caucho</groupId>  
 	    <artifactId>hessian</artifactId>  
-	    <version>${hessian.version}</version> 
+	    <version>${hessian.version}</version>
 	  </dependency> 
   </dependencies>
    <!--部署jar文件到仓库-->
