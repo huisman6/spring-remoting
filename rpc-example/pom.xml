@@ -12,7 +12,7 @@
   <dependencies>
 	  <dependency>
 	  	<groupId>com.youzhixu.springremoting</groupId>
-	    <artifactId>rpc-simple</artifactId>
+	    <artifactId>rpc-httpcomponent</artifactId>
 	    <version>${project.version}</version>
 	  </dependency>
 	   <dependency>

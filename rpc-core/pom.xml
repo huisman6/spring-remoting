@@ -15,6 +15,24 @@
 	    <artifactId>hessian</artifactId>  
 	    <version>${hessian.version}</version>
 	  </dependency> 
+	 <dependency>
+		  <groupId>org.apache.httpcomponents</groupId>
+		  <artifactId>httpclient</artifactId>
+		  <version>4.5.1</version>
+		  <scope>provided</scope>
+	 </dependency>
+	 <dependency>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+          <version>2.5</version>
+          <scope>provided</scope>
+      </dependency>
+      <dependency>
+          <groupId>javax.servlet.jsp</groupId>
+          <artifactId>jsp-api</artifactId>
+          <version>2.1</version>
+          <scope>provided</scope>
+      </dependency>
   </dependencies>
    <!--部署jar文件到仓库-->
     <distributionManagement>

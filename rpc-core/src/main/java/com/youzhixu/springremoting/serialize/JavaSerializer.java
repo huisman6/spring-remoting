@@ -1,4 +1,4 @@
-package com.youzhixu.springremoting.imp.serializer;
+package com.youzhixu.springremoting.serialize;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -17,7 +17,7 @@ import java.io.OutputStream;
  * @createAt 2015年9月20日 下午3:00:08
  * @Copyright (c) 2015,Youzhixu.com Rights Reserved. 
  */
-public class JavaSerializer implements com.youzhixu.springremoting.serialization.Serializer {
+public class JavaSerializer implements com.youzhixu.springremoting.serialize.Serializer {
 
 	@Override
 	public byte[] serialize(Object obj) throws Exception {

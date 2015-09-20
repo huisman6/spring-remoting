@@ -5,7 +5,9 @@
   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
      <!--service consumer/client  import invoker config -->
- 	 <bean class="com.youzhixu.springremoting.invoker.config.RPCInvokerConfig"/>
+ 	 <bean class="com.youzhixu.springremoting.imp.httpcomponent.config.RPCInvokerConfig"/>
+ 	 <!-- 配置序列化协议  只需要配置一次即可-->
+  	 <bean class="com.youzhixu.springremoting.imp.httpcomponent.config.SerializerConfig"/>
  	 <!-- 
  	   或者使用java config: 
  	     @Bean

@@ -1,4 +1,4 @@
-package com.youzhixu.springremoting.serialization;
+package com.youzhixu.springremoting.serialize;
 
 import java.io.IOException;
 import java.io.InputStream;

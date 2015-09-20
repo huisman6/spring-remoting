@@ -1,34 +1,32 @@
-package com.youzhixu.springremoting.imp.httpcomponent.executor;
+package com.youzhixu.springremoting.invoker.executor;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.rmi.RemoteException;
 import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.NoHttpResponseException;
+import org.apache.http.StatusLine;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ByteArrayEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.remoting.httpinvoker.AbstractHttpInvokerRequestExecutor;
-import org.springframework.remoting.httpinvoker.ByteArrayEntity;
-import org.springframework.remoting.httpinvoker.Header;
-import org.springframework.remoting.httpinvoker.HttpClient;
 import org.springframework.remoting.httpinvoker.HttpComponentsHttpInvokerRequestExecutor;
 import org.springframework.remoting.httpinvoker.HttpInvokerClientConfiguration;
-import org.springframework.remoting.httpinvoker.HttpPost;
-import org.springframework.remoting.httpinvoker.HttpResponse;
-import org.springframework.remoting.httpinvoker.NoHttpResponseException;
 import org.springframework.remoting.httpinvoker.SimpleHttpInvokerRequestExecutor;
-import org.springframework.remoting.httpinvoker.StatusLine;
 import org.springframework.remoting.support.RemoteInvocation;
 import org.springframework.remoting.support.RemoteInvocationResult;
 import org.springframework.util.StringUtils;
 
-import com.youzhixu.springremoting.serialization.Serializer;
+import com.youzhixu.springremoting.serialize.Serializer;
 import com.youzhixu.springremoting.url.UrlResolver;
 
 /**
@@ -41,24 +39,23 @@ import com.youzhixu.springremoting.url.UrlResolver;
  * @Copyright (c) 2015,Youzhixu.com Rights Reserved. 
  */
 public class HttpComponentCustomizeHttpInvokerExecutor extends AbstractHttpInvokerRequestExecutor{
-	private Map<String,String> resolvedHosts=new ConcurrentHashMap<>(8);
     /**
-     *负责对象序列化和反序列化
+     *负责对象序列化和反序列化(可以等以后注入)
      */
+	@Autowired
     private Serializer serializer;
     /**
-     *负责发送http请求
+     *负责发送http请求（必须优先注入）
      */
     private HttpClient httpClient;
     /**
-     *负责根据serviceUrl解析真正请求的host
+     *负责根据serviceUrl解析真正请求的host（必须优先注入）
      */
     private UrlResolver urlResolver;
     
-	public HttpComponentInvokerExecutor(Serializer serializer,UrlResolver resolver,HttpClient httpclient) {
-		this.serializer=serializer;
+	public HttpComponentCustomizeHttpInvokerExecutor(UrlResolver urlResolver,HttpClient httpClient) {
+		this.httpClient=httpClient;
 		this.urlResolver=urlResolver;
-		this.httpClient=httpclient;
 	}
 
 
@@ -69,26 +66,28 @@ public class HttpComponentCustomizeHttpInvokerExecutor extends AbstractHttpInvok
 	@Override
 	protected void writeRemoteInvocation(RemoteInvocation invocation, OutputStream os)
 			throws IOException {
+		OutputStream dos=decorateOutputStream(os);
 		try {
-			serializer.writeObject(decorateOutputStream(os), invocation);
+			serializer.writeObject(dos, invocation);
 		}
 		finally {
-			os.close();
+			dos.close();
 		}
 	}
 
 	@Override
 	protected RemoteInvocationResult readRemoteInvocationResult(InputStream is, String codebaseUrl)
 			throws IOException, ClassNotFoundException {
+		InputStream dis=decorateInputStream(is);
 		try {
-			Object obj=serializer.readObject(decorateInputStream(is));
+			Object obj=serializer.readObject(dis);
 			if (!(obj instanceof RemoteInvocationResult)) {
 				throw new RemoteException("Deserialized object needs to be assignable to type [" +
 						RemoteInvocationResult.class.getName() + "]: " + obj);
 			}
 			return (RemoteInvocationResult) obj;
 		}finally{
-			is.close();
+			dis.close();
 		}
 	}
 
@@ -121,7 +120,7 @@ public class HttpComponentCustomizeHttpInvokerExecutor extends AbstractHttpInvok
 	 * @throws java.io.IOException if thrown by I/O methods
 	 */
 	protected HttpPost createHttpPost(HttpInvokerClientConfiguration config) throws IOException {
-		HttpPost httpPost = new HttpPost(this.urlResolver.resolveHost(config.getServiceUrl()));
+		HttpPost httpPost = new HttpPost(this.urlResolver.resolveUrl(config.getServiceUrl()));
 		LocaleContext localeContext = LocaleContextHolder.getLocaleContext();
 		if (localeContext != null) {
 			Locale locale = localeContext.getLocale();

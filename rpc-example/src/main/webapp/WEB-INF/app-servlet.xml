@@ -7,11 +7,13 @@
   <!-- just scan service provider .... -->
   <context:component-scan base-package="com.youzhixu.springremoting.example.provider"/>
   
-  <!-- 服务消费者需要引入配置 -->
+  <!--服务提供方的配置 -->
   <!-- import remoting config -->
-  <bean class="com.youzhixu.springremoting.exporter.config.RPCProviderConfig"></bean>
+  <bean class="com.youzhixu.springremoting.imp.httpcomponent.config.RPCProviderConfig" />
+  <!-- 配置序列化协议 -->
+  <bean class="com.youzhixu.springremoting.imp.httpcomponent.config.SerializerConfig"/>
    <!-- 
- 	   或者使用java config: 
+ 	   java config: 
  	     @Bean
  	     public RPCProviderConfig  createRPCProviderConfig(){
  	       return new RPCProviderConfig();

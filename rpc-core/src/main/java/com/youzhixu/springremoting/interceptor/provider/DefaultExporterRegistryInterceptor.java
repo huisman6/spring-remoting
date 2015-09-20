@@ -1,25 +1,39 @@
-package com.youzhixu.springremoting.imp.interceptor;
+package com.youzhixu.springremoting.interceptor.provider;
 
 import java.lang.annotation.Annotation;
+import java.util.Map;
 
-import org.springframework.core.env.Environment;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.remoting.caucho.HessianServiceExporter;
-import org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter;
 
 import com.youzhixu.springremoting.exporter.annotation.HessianService;
 import com.youzhixu.springremoting.exporter.annotation.HttpService;
+import com.youzhixu.springremoting.exporter.executor.CustomizeHttpInvokerServiceExporter;
 import com.youzhixu.springremoting.interceptor.ServiceExporterRegistryInterceptor;
+import com.youzhixu.springremoting.serialize.Serializer;
 
 /**
- * <p>
- *  默认实现
- * </p> 
  * @author huisman 
  * @since 1.0.0
  * @createAt 2015年9月20日 下午12:19:12
  * @Copyright (c) 2015,Youzhixu.com Rights Reserved. 
  */
-public class DefaultExporterRegistryInterceptor implements ServiceExporterRegistryInterceptor{
+public class DefaultExporterRegistryInterceptor implements ServiceExporterRegistryInterceptor,BeanFactoryAware{
+	private ConfigurableListableBeanFactory beanFactory;
+	private Serializer serializer;
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory=(ConfigurableListableBeanFactory)beanFactory;
+		Map<String,Serializer> alls=  this.beanFactory.getBeansOfType(Serializer.class);
+		if (alls == null || alls.isEmpty()) {
+			throw new IllegalArgumentException("@HttpService找不到序列化实现"+Serializer.class);
+		}
+		this.serializer=alls.values().iterator().next();
+	}
+
 	@Override
 	public int getOrder() {
 		return 0;
@@ -53,7 +67,7 @@ public class DefaultExporterRegistryInterceptor implements ServiceExporterRegist
 	}
 	
 	private Object createHttpServcieExporter(Object bean,Class<?> servcieInterface) {
-		 HttpInvokerServiceExporter exporter=new HttpInvokerServiceExporter();
+		 CustomizeHttpInvokerServiceExporter exporter=new CustomizeHttpInvokerServiceExporter(this.serializer);
 		 exporter.setService(bean);
 		 exporter.setServiceInterface(servcieInterface);
 		 exporter.afterPropertiesSet();
@@ -67,7 +81,5 @@ public class DefaultExporterRegistryInterceptor implements ServiceExporterRegist
 		exporter.afterPropertiesSet();
 		return exporter;
 	}
-
-
 }
 

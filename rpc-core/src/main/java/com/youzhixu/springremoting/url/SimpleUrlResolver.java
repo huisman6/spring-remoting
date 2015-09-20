@@ -1,13 +1,12 @@
-package com.youzhixu.springremoting.imp.resolver;
+package com.youzhixu.springremoting.url;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-
-import com.youzhixu.springremoting.url.UrlResolver;
 
 /**
  * <p>
@@ -20,14 +19,14 @@ import com.youzhixu.springremoting.url.UrlResolver;
  */
 public class SimpleUrlResolver implements UrlResolver{
 	private final static Object lock=new Object();
+	@Autowired
+	private Environment env;
 	/**
 	 *已经解析过的hosts
 	 */
 	private static Map<String,String> resolvedHosts=new ConcurrentHashMap<>(8);
-	private Environment env;
-	public SimpleUrlResolver(Environment env) {
+	public SimpleUrlResolver() {
 		super();
-		this.env = env;
 	}
 	@Override
 	public String resolveUrl(String servcieUrl) {

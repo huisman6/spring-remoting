@@ -115,7 +115,7 @@ public class AutowiredRPCServiceBeanPostProcessor extends InstantiationAwareBean
 
 	@Override
 	public int getOrder() {
-		return Ordered.LOWEST_PRECEDENCE - 10;
+		return Ordered.LOWEST_PRECEDENCE;
 	}
 
 	@Override
