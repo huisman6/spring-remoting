@@ -24,9 +24,9 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.Ordered;
-import org.springframework.core.PriorityOrdered;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.util.ReflectionUtils;
@@ -45,8 +45,7 @@ import com.youzhixu.springremoting.invoker.annotation.Remoting;
  * @createAt 2015年9月17日 下午11:12:16
  * @Copyright (c) 2015, Dooioo All Rights Reserved.
  */
-public class AutowiredRPCServiceBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter
-		implements BeanFactoryAware,InitializingBean,PriorityOrdered{
+public class SimpleAutowiredBeanPostProcessor implements BeanFactoryAware,ApplicationContextAware,Ordered{
 	private final Log logger = LogFactory.getLog(getClass());
 
 	private final Set<Class<? extends Annotation>> autowiredAnnotationTypes =
@@ -54,49 +53,25 @@ public class AutowiredRPCServiceBeanPostProcessor extends InstantiationAwareBean
 	private final Map<String, InjectionMetadata> injectionMetadataCache =
 			new ConcurrentHashMap<String, InjectionMetadata>(64);
 	private ConfigurableListableBeanFactory beanFactory;
-	/**
-	 * 注入字段求值时待调用的拦截器。。
-	 */
-	private final List<AutowiredAnnotedTypeInterceptor> interceptors=new ArrayList<>(2);
-
-	public AutowiredRPCServiceBeanPostProcessor() {
-		//default 
-		this.addCustomizedAnnotation(Remoting.class);
+	@Override
+	public int getOrder() {
+		return Ordered.LOWEST_PRECEDENCE-5;
 	}
 	
-	@Override
-	public void afterPropertiesSet() throws Exception {
-			//we found all Sub interceptors
-			Map<String,AutowiredAnnotedTypeInterceptor> allFoundInterceptors=this.beanFactory.getBeansOfType(AutowiredAnnotedTypeInterceptor.class);
-			if (allFoundInterceptors != null &&  !allFoundInterceptors.isEmpty()) {
-				for (AutowiredAnnotedTypeInterceptor sub : allFoundInterceptors.values()) {
-					this.interceptors.add(sub);
-				}
-			}
-			if (this.interceptors.isEmpty()) {
-				throw new IllegalStateException("找不到AutowiredAnnotedTypeInterceptor.");
-			}
-			Collections.sort(this.interceptors,
-					new Comparator<AutowiredAnnotedTypeInterceptor>() {
-						@Override
-						public int compare(AutowiredAnnotedTypeInterceptor o1,
-								AutowiredAnnotedTypeInterceptor o2) {
-							return Integer.compare(o2.getOrder(), o1.getOrder());
-						}
-
-					});
-				if (logger.isInfoEnabled()) {
-					for (AutowiredAnnotedTypeInterceptor it : interceptors) {
-						logger.info("resolve AutowiredAnnotedTypeInterceptor:" + it.getClass()
-								+ ",order=" + it.getOrder());
-					}
-				}
-	}
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory=(ConfigurableListableBeanFactory)beanFactory;
 	}
 
+	/**
+	 * 注入字段求值时待调用的拦截器。。
+	 */
+	private final List<AutowiredAnnotedTypeInterceptor> interceptors=new ArrayList<>(2);
+
+	public SimpleAutowiredBeanPostProcessor() {
+		//default 
+		this.addCustomizedAnnotation(Remoting.class);
+	}
 	/**
 	 * <p>
 	 * 添加自定义注入的标注
@@ -112,28 +87,63 @@ public class AutowiredRPCServiceBeanPostProcessor extends InstantiationAwareBean
 		this.autowiredAnnotationTypes.add(clazz);
 	}
 
-
-
-	@Override
-	public int getOrder() {
-		return Ordered.LOWEST_PRECEDENCE;
-	}
-
-	@Override
-	public Object postProcessAfterInitialization(Object bean, String beanName)
-			throws BeansException {
-		Class<?> clazz = bean.getClass();
-		InjectionMetadata metadata = findAutowiringMetadata(clazz.getName(), clazz);
-		if (metadata != null) {
-			try {
-				metadata.inject(bean, null, null);
-			} catch (Throwable ex) {
-				throw new BeanCreationException(
-						"Injection of autowired dependencies failed for class [" + clazz + "]", ex);
+	private void searchInterceptors(){
+		//we found all Sub interceptors
+		Map<String,AutowiredAnnotedTypeInterceptor> allFoundInterceptors=this.beanFactory.getBeansOfType(AutowiredAnnotedTypeInterceptor.class);
+		if (allFoundInterceptors != null &&  !allFoundInterceptors.isEmpty()) {
+			for (AutowiredAnnotedTypeInterceptor sub : allFoundInterceptors.values()) {
+				this.interceptors.add(sub);
 			}
 		}
-		return bean;
+		if (this.interceptors.isEmpty()) {
+			throw new IllegalStateException("找不到AutowiredAnnotedTypeInterceptor.");
+		}
+		Collections.sort(this.interceptors,
+				new Comparator<AutowiredAnnotedTypeInterceptor>() {
+					@Override
+					public int compare(AutowiredAnnotedTypeInterceptor o1,
+							AutowiredAnnotedTypeInterceptor o2) {
+						return Integer.compare(o2.getOrder(), o1.getOrder());
+					}
+
+				});
+			if (logger.isInfoEnabled()) {
+				for (AutowiredAnnotedTypeInterceptor it : interceptors) {
+					logger.info("resolve AutowiredAnnotedTypeInterceptor:" + it.getClass()
+							+ ",order=" + it.getOrder());
+				}
+			}
 	}
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException{
+		searchInterceptors();
+		ApplicationContext ac=applicationContext;
+		do {
+			String[] names= ac.getBeanDefinitionNames();
+			if (names !=null && names.length >0) {
+				for (String nm : names) {
+					Object bean=applicationContext.getBean(nm);
+					Class<?> clazz = bean.getClass();
+					InjectionMetadata metadata = findAutowiringMetadata(clazz.getName(), clazz);
+					if (metadata != null) {
+						try {
+						 if (logger.isInfoEnabled()) {
+							logger.info("正在注入,found remoting service:name="+nm+",class:"+clazz.getName());
+						}
+							metadata.inject(bean, null, null);
+						} catch (Throwable ex) {
+							throw new BeanCreationException(
+									"Injection of autowired dependencies failed for class [" + clazz + "]", ex);
+						}
+					}
+				}
+			}
+			
+		} while ((ac=ac.getParent())!=null);
+	}
+
+	
+		
 
 	private InjectionMetadata findAutowiringMetadata(String beanName, Class<?> clazz) {
 		String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
@@ -143,6 +153,9 @@ public class AutowiredRPCServiceBeanPostProcessor extends InstantiationAwareBean
 				metadata = this.injectionMetadataCache.get(cacheKey);
 				if (InjectionMetadata.needsRefresh(metadata, clazz)) {
 					metadata = buildAutowiringMetadata(clazz);
+					if (metadata == null) {
+						return metadata;
+					}
 					this.injectionMetadataCache.put(cacheKey, metadata);
 				}
 			}
@@ -178,6 +191,9 @@ public class AutowiredRPCServiceBeanPostProcessor extends InstantiationAwareBean
 			elements.addAll(0, currElements);
 			targetClass = targetClass.getSuperclass();
 		} while (targetClass != null && targetClass != Object.class);
+		if (elements.isEmpty()) {
+			return null;
+		}
 		return new InjectionMetadata(clazz, elements);
 	}
 

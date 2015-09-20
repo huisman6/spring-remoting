@@ -2,22 +2,20 @@ package com.youzhixu.springremoting.interceptor.provider;
 
 import java.lang.annotation.Annotation;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.apache.http.client.HttpClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.remoting.caucho.HessianProxyFactoryBean;
 import org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean;
 
 import com.youzhixu.springremoting.constant.ServicePath;
 import com.youzhixu.springremoting.exporter.annotation.HessianService;
 import com.youzhixu.springremoting.exporter.annotation.HttpService;
+import com.youzhixu.springremoting.factory.RPCHttpClientFactoryBean;
 import com.youzhixu.springremoting.interceptor.AutowiredAnnotedTypeInterceptor;
 import com.youzhixu.springremoting.invoker.annotation.Remoting;
 import com.youzhixu.springremoting.invoker.executor.HttpComponentCustomizeHttpInvokerExecutor;
 import com.youzhixu.springremoting.invoker.executor.HttpComponentHessianConnectionFactory;
+import com.youzhixu.springremoting.serialize.Serializer;
 import com.youzhixu.springremoting.url.UrlResolver;
 
 /**
@@ -26,29 +24,11 @@ import com.youzhixu.springremoting.url.UrlResolver;
  * @createAt 2015年9月20日 下午12:16:08
  * @Copyright (c) 2015,Youzhixu.com Rights Reserved. 
  */
-public class DefaultInvokerAutowiredInterceptor implements AutowiredAnnotedTypeInterceptor,BeanFactoryAware{
-	private final Log logger=LogFactory.getLog(this.getClass());
-	private ConfigurableListableBeanFactory beanFactory;
-	private HttpComponentCustomizeHttpInvokerExecutor httpInvokerExecutor;
-	private HttpComponentHessianConnectionFactory hessianConnectonFactory;
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory=(ConfigurableListableBeanFactory)beanFactory;
-		this.httpInvokerExecutor=  this.beanFactory.getBean(HttpComponentCustomizeHttpInvokerExecutor.class);
-		if (httpInvokerExecutor == null) {
-			throw new IllegalArgumentException("@RPCService找不到Invoker Executor实现"+HttpComponentCustomizeHttpInvokerExecutor.class);
-		}
-		if(logger.isInfoEnabled()){
-			logger.info("找到httpInvoker Executor:"+this.httpInvokerExecutor.getClass().getName());
-		}
-		this.hessianConnectonFactory=this.beanFactory.getBean(HttpComponentHessianConnectionFactory.class);
-		if (hessianConnectonFactory==null) {
-			throw new IllegalArgumentException("@RPCService Invoker Executor实现"+HttpComponentHessianConnectionFactory.class);
-		}
-		if (logger.isInfoEnabled()) {
-			logger.info("找到hessian connectionFactory:"+this.hessianConnectonFactory.getClass().getName());
-		}
-	}
+public class DefaultInvokerAutowiredInterceptor implements AutowiredAnnotedTypeInterceptor{
+	@Autowired
+	private UrlResolver urlResolver;
+	@Autowired
+	private RPCHttpClientFactoryBean rpcHttpClientFactoryBean;
 
 	@Override
 	public int getOrder() {
@@ -59,7 +39,11 @@ public class DefaultInvokerAutowiredInterceptor implements AutowiredAnnotedTypeI
 	public Object resolveAutowiredValue(Class<?> autowiredType) {
 		HttpService httpService = autowiredType.getAnnotation(HttpService.class);
 		if (httpService != null) {
-			return createHttpInvokerBean(httpService.value(), autowiredType);
+			try {
+				return createHttpInvokerBean(httpService.value(), autowiredType,httpService.serializer().newInstance());
+			} catch (InstantiationException | IllegalAccessException e) {
+				throw new IllegalStateException(e);
+			}
 		} 
 		HessianService hessianService = autowiredType.getAnnotation(HessianService.class);
 		if (hessianService != null) {
@@ -78,9 +62,16 @@ public class DefaultInvokerAutowiredInterceptor implements AutowiredAnnotedTypeI
 	 * @return
 	 * @since: 1.0.0
 	 */
-	protected Object createHttpInvokerBean(String appName, Class<?> serviceInterface) {
+	protected Object createHttpInvokerBean(String appName, Class<?> serviceInterface,Serializer serializer) {
 		HttpInvokerProxyFactoryBean hp = new HttpInvokerProxyFactoryBean();
-		hp.setHttpInvokerRequestExecutor(this.httpInvokerExecutor);
+		HttpComponentCustomizeHttpInvokerExecutor httpExecutor;
+		try {
+			httpExecutor = new HttpComponentCustomizeHttpInvokerExecutor(urlResolver,
+					rpcHttpClientFactoryBean.getObject(), serializer);
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
+		hp.setHttpInvokerRequestExecutor(httpExecutor);
 		hp.setServiceInterface(serviceInterface);
 		hp.setServiceUrl(getServiceUrl(appName, serviceInterface));
 		hp.afterPropertiesSet();
@@ -99,7 +90,13 @@ public class DefaultInvokerAutowiredInterceptor implements AutowiredAnnotedTypeI
 	 */
 	protected Object createHessianInvokerBean(String appName, Class<?> serviceInterface) {
 		HessianProxyFactoryBean hp = new HessianProxyFactoryBean();
-		hp.setConnectionFactory(this.hessianConnectonFactory);
+		try {
+			HttpComponentHessianConnectionFactory hessianConnectionFactory=new HttpComponentHessianConnectionFactory(urlResolver, 
+					rpcHttpClientFactoryBean.getObject());
+			hp.setConnectionFactory(hessianConnectionFactory);
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
 		hp.setServiceInterface(serviceInterface);
 		hp.setServiceUrl(getServiceUrl(appName, serviceInterface));
 		hp.afterPropertiesSet();

@@ -6,6 +6,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.youzhixu.springremoting.serialize.JavaSerializer;
+import com.youzhixu.springremoting.serialize.NoneOpSerializer;
+import com.youzhixu.springremoting.serialize.Serializer;
+
 /**
  * 必须指定服务名称（app）, 如何获取服务提供方的url取决于相关实现。<br>
  * 我们既可以使用Spring Enviroment配置rpc服务提供者的http访问地址：rpc.{app}.url=http://youdomain.com<br>
@@ -24,4 +28,12 @@ public @interface HessianService {
 	  * @since: 1.0.0
 	 */
 	String value();
+	/**
+	  * <p>
+	  *  序列化实现类
+	  * </p> 
+	  * @return
+	  * @since: 1.0.0
+	 */
+	Class<? extends Serializer> serializer() default NoneOpSerializer.class;
 }

@@ -1,8 +1,10 @@
 package com.youzhixu.springremoting.invoker.config;
 
+import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.youzhixu.springremoting.factory.RPCHttpClientFactoryBean;
 import com.youzhixu.springremoting.interceptor.AutowiredAnnotedTypeInterceptor;
 import com.youzhixu.springremoting.interceptor.provider.DefaultInvokerAutowiredInterceptor;
 import com.youzhixu.springremoting.invoker.processor.AutowiredRPCServiceBeanPostProcessor;
@@ -41,6 +43,19 @@ public class DefaultInvokerConfig {
 	@Bean(name = "autowiredAnnotedTypeInterceptor")
 	public static AutowiredAnnotedTypeInterceptor defaultAnnotedTypeInterceptor() {
 		return new DefaultInvokerAutowiredInterceptor();
+	}
+	
+
+	/**
+	  * <p>
+	  *  创建httpclient
+	  * </p> 
+	  * @return
+	  * @since: 1.0.0
+	 */
+	@Bean(name="rpcHttpClientFactoryBean",autowire=Autowire.BY_NAME)
+	public RPCHttpClientFactoryBean rpcHttpClientFactoryBean(){
+		return new RPCHttpClientFactoryBean();
 	}
 }
 

@@ -1,4 +1,4 @@
-package com.youzhixu.springremoting.imp.httpcomponent.factory;
+package com.youzhixu.springremoting.factory;
 
 
 import org.apache.commons.logging.Log;

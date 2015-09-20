@@ -1,4 +1,4 @@
-package com.youzhixu.springremoting.imp.httpcomponent.factory;
+package com.youzhixu.springremoting.factory;
 
 import java.io.Serializable;
 

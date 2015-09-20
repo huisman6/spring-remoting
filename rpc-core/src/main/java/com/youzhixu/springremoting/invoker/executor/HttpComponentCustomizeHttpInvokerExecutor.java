@@ -15,7 +15,6 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.remoting.httpinvoker.AbstractHttpInvokerRequestExecutor;
@@ -39,23 +38,20 @@ import com.youzhixu.springremoting.url.UrlResolver;
  * @Copyright (c) 2015,Youzhixu.com Rights Reserved. 
  */
 public class HttpComponentCustomizeHttpInvokerExecutor extends AbstractHttpInvokerRequestExecutor{
-    /**
-     *负责对象序列化和反序列化(可以等以后注入)
-     */
-	@Autowired
     private Serializer serializer;
     /**
-     *负责发送http请求（必须优先注入）
+     *负责发送http请求
      */
     private HttpClient httpClient;
     /**
-     *负责根据serviceUrl解析真正请求的host（必须优先注入）
+     *负责根据serviceUrl解析真正请求的host
      */
     private UrlResolver urlResolver;
     
-	public HttpComponentCustomizeHttpInvokerExecutor(UrlResolver urlResolver,HttpClient httpClient) {
+	public HttpComponentCustomizeHttpInvokerExecutor(UrlResolver urlResolver,HttpClient httpClient,Serializer serializer) {
 		this.httpClient=httpClient;
 		this.urlResolver=urlResolver;
+		this.serializer=serializer;
 	}
 
 

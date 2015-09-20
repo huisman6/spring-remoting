@@ -1,12 +1,7 @@
 package com.youzhixu.springremoting.interceptor.provider;
 
 import java.lang.annotation.Annotation;
-import java.util.Map;
 
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.remoting.caucho.HessianServiceExporter;
 
 import com.youzhixu.springremoting.exporter.annotation.HessianService;
@@ -21,18 +16,7 @@ import com.youzhixu.springremoting.serialize.Serializer;
  * @createAt 2015年9月20日 下午12:19:12
  * @Copyright (c) 2015,Youzhixu.com Rights Reserved. 
  */
-public class DefaultExporterRegistryInterceptor implements ServiceExporterRegistryInterceptor,BeanFactoryAware{
-	private ConfigurableListableBeanFactory beanFactory;
-	private Serializer serializer;
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory=(ConfigurableListableBeanFactory)beanFactory;
-		Map<String,Serializer> alls=  this.beanFactory.getBeansOfType(Serializer.class);
-		if (alls == null || alls.isEmpty()) {
-			throw new IllegalArgumentException("@HttpService找不到序列化实现"+Serializer.class);
-		}
-		this.serializer=alls.values().iterator().next();
-	}
+public class DefaultExporterRegistryInterceptor implements ServiceExporterRegistryInterceptor{
 
 	@Override
 	public int getOrder() {
@@ -43,7 +27,11 @@ public class DefaultExporterRegistryInterceptor implements ServiceExporterRegist
 	public Object resolveServcieExporter(Class<?> servcieInterface, Object serviceProvider) {
 		HttpService httpService=servcieInterface.getAnnotation(HttpService.class);
 		if (httpService !=null) {
-			return createHttpServcieExporter(serviceProvider, servcieInterface);
+			try {
+				return createHttpServcieExporter(serviceProvider, servcieInterface,httpService.serializer().newInstance());
+			} catch (InstantiationException | IllegalAccessException e) {
+				throw new IllegalStateException(e);
+			}
 		}
 		HessianService hessianService=servcieInterface.getAnnotation(HessianService.class);
 		if (hessianService !=null) {
@@ -66,8 +54,8 @@ public class DefaultExporterRegistryInterceptor implements ServiceExporterRegist
 		return false;
 	}
 	
-	private Object createHttpServcieExporter(Object bean,Class<?> servcieInterface) {
-		 CustomizeHttpInvokerServiceExporter exporter=new CustomizeHttpInvokerServiceExporter(this.serializer);
+	private Object createHttpServcieExporter(Object bean,Class<?> servcieInterface,Serializer serializer) {
+		 CustomizeHttpInvokerServiceExporter exporter=new CustomizeHttpInvokerServiceExporter(serializer);
 		 exporter.setService(bean);
 		 exporter.setServiceInterface(servcieInterface);
 		 exporter.afterPropertiesSet();

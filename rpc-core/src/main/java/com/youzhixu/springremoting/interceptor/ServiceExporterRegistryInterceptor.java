@@ -16,7 +16,6 @@ import org.springframework.core.Ordered;
 public interface ServiceExporterRegistryInterceptor  extends Ordered {
 	/**
 	  * @param servcieInterface rpc服务接口
-	  * @param env 当前运行环境
 	  * @param serviceProvider 提供服务的实现方
 	  * @return
 	  * @since: 1.0.0
