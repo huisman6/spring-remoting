@@ -31,18 +31,24 @@ import com.youzhixu.springremoting.interceptor.ServiceExporterRegistryIntercepto
  * @Copyright (c) 2015, Youzhixu.com All Rights Reserved.
  */
 public class ServiceExporterBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter
-		implements	PriorityOrdered,BeanFactoryAware,InitializingBean {
+		implements
+			PriorityOrdered,
+			BeanFactoryAware,
+			InitializingBean {
 	private final Log logger = LogFactory.getLog(getClass());
 	private ConfigurableListableBeanFactory beanFactory;
 	private final List<ServiceExporterRegistryInterceptor> interceptors = new ArrayList<>(2);
+
 	public ServiceExporterBeanPostProcessor() {
 		super();
 	}
+
 	@Override
-	public void afterPropertiesSet() throws Exception{
-		//we found all Sub interceptors
-		Map<String,ServiceExporterRegistryInterceptor> allFoundInterceptors=this.beanFactory.getBeansOfType(ServiceExporterRegistryInterceptor.class);
-		if (allFoundInterceptors != null &&  !allFoundInterceptors.isEmpty()) {
+	public void afterPropertiesSet() throws Exception {
+		// we found all Sub interceptors
+		Map<String, ServiceExporterRegistryInterceptor> allFoundInterceptors =
+				this.beanFactory.getBeansOfType(ServiceExporterRegistryInterceptor.class);
+		if (allFoundInterceptors != null && !allFoundInterceptors.isEmpty()) {
 			for (ServiceExporterRegistryInterceptor sub : allFoundInterceptors.values()) {
 				this.interceptors.add(sub);
 			}
@@ -50,65 +56,68 @@ public class ServiceExporterBeanPostProcessor extends InstantiationAwareBeanPost
 		if (this.interceptors.isEmpty()) {
 			throw new IllegalStateException("找不到AutowiredAnnotedTypeInterceptor.");
 		}
-		Collections.sort(interceptors,
-				new Comparator<ServiceExporterRegistryInterceptor>() {
-					@Override
-					public int compare(ServiceExporterRegistryInterceptor o1,
-							ServiceExporterRegistryInterceptor o2) {
-						return Integer.compare(o2.getOrder(), o1.getOrder());
-					}
+		Collections.sort(interceptors, new Comparator<ServiceExporterRegistryInterceptor>() {
+			@Override
+			public int compare(ServiceExporterRegistryInterceptor o1,
+					ServiceExporterRegistryInterceptor o2) {
+				return Integer.compare(o2.getOrder(), o1.getOrder());
+			}
 
-				});
+		});
 		if (logger.isInfoEnabled()) {
 			for (ServiceExporterRegistryInterceptor it : interceptors) {
 				logger.info("resolve ServiceExporterRegistryInterceptor:" + it.getClass()
 						+ ",order=" + it.getOrder());
-				}
+			}
 		}
 	}
+
 	@Override
 	public int getOrder() {
 		return Ordered.LOWEST_PRECEDENCE - 10;
 	}
-	
+
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName)
 			throws BeansException {
-		Class<?> rpcInterface=findRPCServiceInterface(bean, RPCService.class);
-		if (rpcInterface !=null) {
-			Object exporter=null;
+		Class<?> rpcInterface = findRPCServiceInterface(bean, RPCService.class);
+		if (rpcInterface != null) {
+			Object exporter = null;
 			// 主动注入
 			if (interceptors != null) {
 				for (ServiceExporterRegistryInterceptor interceptor : interceptors) {
 					// 处理此种类型,我们只查找第一个找到可以处理的
-					if (interceptor.accept(rpcInterface.getAnnotations(),rpcInterface)) {
-						exporter =
-								interceptor.resolveServcieExporter(rpcInterface, bean);
+					if (interceptor.accept(rpcInterface.getAnnotations(), rpcInterface)) {
+						exporter = interceptor.resolveServcieExporter(rpcInterface, bean);
 						break;
 					}
 				}
 			}
-			if (exporter==null) {
-				throw new IllegalStateException("RPC Service Exporter is null,@RPCService interface is :"+rpcInterface.getName());
+			if (exporter == null) {
+				throw new IllegalStateException(
+						"RPC Service Exporter is null,@RPCService interface is :"
+								+ rpcInterface.getName());
 			}
-			String exporterName=ServicePath.PREFIX + "/" + rpcInterface.getName();
+			String exporterName = ServicePath.PREFIX + "/" + rpcInterface.getName();
 			if (logger.isInfoEnabled()) {
-				logger.info("found rpc service interface :"+rpcInterface.getName()+",exporter="+exporter.getClass().getName()+",beanName="+exporterName);
+				logger.info("found rpc service interface :" + rpcInterface.getName() + ",exporter="
+						+ exporter.getClass().getName() + ",beanName=" + exporterName);
 			}
-			//do register exporter
+			// do register exporter
 			this.beanFactory.registerSingleton(exporterName, exporter);
 		}
 		return bean;
 	}
-	
+
 	/**
-	  * <p>
-	  *  基于rpc service的实现类来查找接口
-	  * </p> 
-	  * @param rpcService
-	  * @param rpcAnnotation
-	  * @return
-	  * @since: 1.0.0
+	 * <p>
+	 * 基于rpc service的实现类来查找接口
+	 * </p>
+	 * 
+	 * @param rpcService
+	 * @param rpcAnnotation
+	 * @return
+	 * @since: 1.0.0
 	 */
 	private Class<?> findRPCServiceInterface(Object rpcService,
 			Class<? extends Annotation> rpcAnnotation) {
@@ -117,7 +126,7 @@ public class ServiceExporterBeanPostProcessor extends InstantiationAwareBeanPost
 		}
 		if (AnnotationUtils.isAnnotationDeclaredLocally(Service.class, rpcService.getClass())) {
 			for (Class<?> interfaceClass : rpcService.getClass().getInterfaces()) {
-				if (AnnotationUtils.findAnnotation(interfaceClass, rpcAnnotation) !=null) {
+				if (AnnotationUtils.findAnnotation(interfaceClass, rpcAnnotation) != null) {
 					return interfaceClass;
 				}
 			}
@@ -128,6 +137,6 @@ public class ServiceExporterBeanPostProcessor extends InstantiationAwareBeanPost
 
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory=(ConfigurableListableBeanFactory)beanFactory;
+		this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
 	}
 }

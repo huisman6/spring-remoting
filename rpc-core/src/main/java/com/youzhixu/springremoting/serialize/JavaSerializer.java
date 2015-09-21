@@ -10,39 +10,38 @@ import java.io.OutputStream;
 
 /**
  * <p>
- *  默认使用java序列化
- * </p> 
- * @author huisman 
+ * 默认使用java序列化
+ * </p>
+ * 
+ * @author huisman
  * @since 1.0.0
  * @createAt 2015年9月20日 下午3:00:08
- * @Copyright (c) 2015,Youzhixu.com Rights Reserved. 
+ * @Copyright (c) 2015,Youzhixu.com Rights Reserved.
  */
-public class JavaSerializer implements com.youzhixu.springremoting.serialize.Serializer {
+class JavaSerializer implements com.youzhixu.springremoting.serialize.Serializer {
 
 	@Override
 	public byte[] serialize(Object obj) throws Exception {
-		ByteArrayOutputStream bas=new ByteArrayOutputStream();
-		 ObjectOutputStream baos=new ObjectOutputStream(bas);
-		 baos.writeObject(obj);
-		 return bas.toByteArray();
+		ByteArrayOutputStream bas = new ByteArrayOutputStream();
+		ObjectOutputStream baos = new ObjectOutputStream(bas);
+		baos.writeObject(obj);
+		return bas.toByteArray();
 	}
 
 	@Override
 	public void writeObject(OutputStream out, Object obj) throws IOException {
-		 ObjectOutputStream baos=new ObjectOutputStream(out);
-		 baos.writeObject(obj);
+		ObjectOutputStream baos = new ObjectOutputStream(out);
+		baos.writeObject(obj);
 	}
 
 	@Override
-	public Object readObject(InputStream is) throws IOException{
-		 ObjectInputStream ois=new ObjectInputStream(is);
-		 try {
-			 return ois.readObject();
+	public Object readObject(InputStream is) throws IOException {
+		ObjectInputStream ois = new ObjectInputStream(is);
+		try {
+			return ois.readObject();
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
 	}
 
 }
-
-

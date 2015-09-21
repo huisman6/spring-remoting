@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.youzhixu.springremoting</groupId>
     <artifactId>rpc</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
   </parent>
   <artifactId>rpc-netflix</artifactId>
   <name>rpc-netflix</name>

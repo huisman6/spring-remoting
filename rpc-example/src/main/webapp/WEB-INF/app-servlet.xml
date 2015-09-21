@@ -10,8 +10,6 @@
   <!--服务提供方的配置 -->
   <!-- import remoting config -->
   <bean class="com.youzhixu.springremoting.imp.httpcomponent.config.RPCProviderConfig" />
-  <!-- 配置序列化协议 -->
-  <bean class="com.youzhixu.springremoting.imp.httpcomponent.config.SerializerConfig"/>
    <!-- 
  	   java config: 
  	     @Bean

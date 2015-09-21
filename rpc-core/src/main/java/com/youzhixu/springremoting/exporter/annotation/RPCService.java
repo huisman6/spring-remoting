@@ -6,19 +6,21 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.youzhixu.springremoting.serialize.NoneOpSerializer;
-import com.youzhixu.springremoting.serialize.Serializer;
+import com.youzhixu.springremoting.serialize.SerializeProvider;
 
 /**
  * 必须指定服务名称（app）, 如何获取服务提供方的url取决于相关实现。<br>
  * 我们既可以使用Spring Enviroment配置rpc服务提供者的http访问地址：rpc.{app}.url=http://youdomain.com<br>
  * 比如，app=user，消费方需要配置参数： rpc.user.url=http://youdomain.com<br>
- * 也可以使用当作netflix eureka client查找服务提供方的地址，app值用作服务提供方的vipAddress。<br><br><br>
+ * 也可以使用当作netflix eureka client查找服务提供方的地址，app值用作服务提供方的vipAddress。<br>
+ * <br>
+ * <br>
  * 如何获取服务提供方的url取决于相关实现。<br>
- * @author huisman 
+ * 
+ * @author huisman
  * @since 1.0.0
  * @createAt 2015年9月19日 下午4:09:46
- * @Copyright (c) 2015,Youzhixu.com Rights Reserved. 
+ * @Copyright (c) 2015,Youzhixu.com Rights Reserved.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -30,14 +32,14 @@ public @interface RPCService {
 	 * @return
 	 */
 	String value();
+
 	/**
-	  * <p>
-	  *  序列化实现类
-	  * </p> 
-	  * @return
-	  * @since: 1.0.0
+	 * <p>
+	 * 序列化实现类
+	 * </p>
+	 * 
+	 * @return
+	 * @since: 1.0.0
 	 */
-	Class<? extends Serializer> serializer() default NoneOpSerializer.class;
+	SerializeProvider serializer() default SerializeProvider.NONE;
 }
-
-

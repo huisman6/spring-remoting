@@ -6,14 +6,15 @@ import java.io.OutputStream;
 
 /**
  * <p>
- *  none operation serializer
- * </p> 
- * @author huisman 
+ * none operation serializer
+ * </p>
+ * 
+ * @author huisman
  * @since 1.0.0
  * @createAt 2015年9月21日 上午12:00:31
- * @Copyright (c) 2015,Youzhixu.com Rights Reserved. 
+ * @Copyright (c) 2015,Youzhixu.com Rights Reserved.
  */
-public class NoneOpSerializer implements Serializer {
+class NoneOpSerializer implements Serializer {
 
 	@Override
 	public byte[] serialize(Object obj) throws Exception {
@@ -29,5 +30,3 @@ public class NoneOpSerializer implements Serializer {
 	}
 
 }
-
-

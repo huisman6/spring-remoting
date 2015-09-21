@@ -1,13 +1,16 @@
 package com.youzhixu.springremoting.imp.httpcomponent.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
-import com.youzhixu.springremoting.exporter.config.DefaultProviderConfig;
+import com.youzhixu.springremoting.exporter.processor.ServiceExporterBeanPostProcessor;
+import com.youzhixu.springremoting.imp.httpcomponent.interceptor.HessianServiceExporterInterceptor;
+import com.youzhixu.springremoting.imp.httpcomponent.interceptor.HttpServiceExporterInterceptor;
+import com.youzhixu.springremoting.interceptor.ServiceExporterRegistryInterceptor;
 
 /**
  * <p>
- * Service Provider config & Interceptors & serializer
+ * Service Provider & Interceptors
  * </p>
  * 
  * @author huisman
@@ -16,7 +19,19 @@ import com.youzhixu.springremoting.exporter.config.DefaultProviderConfig;
  * @Copyright (c) 2015, Youzhixu.com All Rights Reserved.
  */
 @Configuration
-@Import(DefaultProviderConfig.class)
 public class RPCProviderConfig {
-}
+	@Bean
+	public static ServiceExporterBeanPostProcessor serviceExporterBeanFactoryPostProcessor() {
+		return new ServiceExporterBeanPostProcessor();
+	}
 
+	@Bean
+	public ServiceExporterRegistryInterceptor httpServiceExporterInterceptor() {
+		return new HttpServiceExporterInterceptor();
+	}
+
+	@Bean
+	public ServiceExporterRegistryInterceptor hessianServiceExporterInterceptor() {
+		return new HessianServiceExporterInterceptor();
+	}
+}

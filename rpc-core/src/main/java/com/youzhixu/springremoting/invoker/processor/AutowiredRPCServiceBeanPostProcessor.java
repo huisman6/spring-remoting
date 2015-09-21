@@ -30,7 +30,6 @@ import org.springframework.core.PriorityOrdered;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.util.StringUtils;
 
 import com.youzhixu.springremoting.interceptor.AutowiredAnnotedTypeInterceptor;
 import com.youzhixu.springremoting.invoker.annotation.Remoting;
@@ -45,56 +44,62 @@ import com.youzhixu.springremoting.invoker.annotation.Remoting;
  * @createAt 2015年9月17日 下午11:12:16
  * @Copyright (c) 2015, Dooioo All Rights Reserved.
  */
-public class AutowiredRPCServiceBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter
-		implements BeanFactoryAware,InitializingBean,PriorityOrdered{
+public class AutowiredRPCServiceBeanPostProcessor
+		extends InstantiationAwareBeanPostProcessorAdapter
+		implements
+			BeanFactoryAware,
+			InitializingBean,
+			PriorityOrdered {
 	private final Log logger = LogFactory.getLog(getClass());
 
 	private final Set<Class<? extends Annotation>> autowiredAnnotationTypes =
 			new LinkedHashSet<Class<? extends Annotation>>();
-	private final Map<String, InjectionMetadata> injectionMetadataCache =
-			new ConcurrentHashMap<String, InjectionMetadata>(64);
+	// 注入字段的值
+	private final Map<Class<?>, Object> injectionMetadataCache =
+			new ConcurrentHashMap<Class<?>, Object>(64);
 	private ConfigurableListableBeanFactory beanFactory;
 	/**
 	 * 注入字段求值时待调用的拦截器。。
 	 */
-	private final List<AutowiredAnnotedTypeInterceptor> interceptors=new ArrayList<>(2);
+	private final List<AutowiredAnnotedTypeInterceptor> interceptors = new ArrayList<>(2);
 
 	public AutowiredRPCServiceBeanPostProcessor() {
-		//default 
+		// default
 		this.addCustomizedAnnotation(Remoting.class);
 	}
-	
+
 	@Override
 	public void afterPropertiesSet() throws Exception {
-			//we found all Sub interceptors
-			Map<String,AutowiredAnnotedTypeInterceptor> allFoundInterceptors=this.beanFactory.getBeansOfType(AutowiredAnnotedTypeInterceptor.class);
-			if (allFoundInterceptors != null &&  !allFoundInterceptors.isEmpty()) {
-				for (AutowiredAnnotedTypeInterceptor sub : allFoundInterceptors.values()) {
-					this.interceptors.add(sub);
-				}
+		// we found all Sub interceptors
+		Map<String, AutowiredAnnotedTypeInterceptor> allFoundInterceptors =
+				this.beanFactory.getBeansOfType(AutowiredAnnotedTypeInterceptor.class);
+		if (allFoundInterceptors != null && !allFoundInterceptors.isEmpty()) {
+			for (AutowiredAnnotedTypeInterceptor sub : allFoundInterceptors.values()) {
+				this.interceptors.add(sub);
 			}
-			if (this.interceptors.isEmpty()) {
-				throw new IllegalStateException("找不到AutowiredAnnotedTypeInterceptor.");
+		}
+		if (this.interceptors.isEmpty()) {
+			throw new IllegalStateException("找不到AutowiredAnnotedTypeInterceptor.");
+		}
+		Collections.sort(this.interceptors, new Comparator<AutowiredAnnotedTypeInterceptor>() {
+			@Override
+			public int compare(AutowiredAnnotedTypeInterceptor o1,
+					AutowiredAnnotedTypeInterceptor o2) {
+				return Integer.compare(o2.getOrder(), o1.getOrder());
 			}
-			Collections.sort(this.interceptors,
-					new Comparator<AutowiredAnnotedTypeInterceptor>() {
-						@Override
-						public int compare(AutowiredAnnotedTypeInterceptor o1,
-								AutowiredAnnotedTypeInterceptor o2) {
-							return Integer.compare(o2.getOrder(), o1.getOrder());
-						}
 
-					});
-				if (logger.isInfoEnabled()) {
-					for (AutowiredAnnotedTypeInterceptor it : interceptors) {
-						logger.info("resolve AutowiredAnnotedTypeInterceptor:" + it.getClass()
-								+ ",order=" + it.getOrder());
-					}
-				}
+		});
+		if (logger.isInfoEnabled()) {
+			for (AutowiredAnnotedTypeInterceptor it : interceptors) {
+				logger.info("resolve AutowiredAnnotedTypeInterceptor:" + it.getClass() + ",order="
+						+ it.getOrder());
+			}
+		}
 	}
+
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory=(ConfigurableListableBeanFactory)beanFactory;
+		this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
 	}
 
 	/**
@@ -136,16 +141,11 @@ public class AutowiredRPCServiceBeanPostProcessor extends InstantiationAwareBean
 	}
 
 	private InjectionMetadata findAutowiringMetadata(String beanName, Class<?> clazz) {
-		String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
-		InjectionMetadata metadata = this.injectionMetadataCache.get(cacheKey);
-		if (InjectionMetadata.needsRefresh(metadata, clazz)) {
-			synchronized (this.injectionMetadataCache) {
-				metadata = this.injectionMetadataCache.get(cacheKey);
-				if (InjectionMetadata.needsRefresh(metadata, clazz)) {
-					metadata = buildAutowiringMetadata(clazz);
-					this.injectionMetadataCache.put(cacheKey, metadata);
-				}
-			}
+		// 查找需要注入的字段====
+		InjectionMetadata metadata = buildAutowiringMetadata(clazz);
+		// 如果没找到，则直接返回
+		if (metadata == null) {
+			return null;
 		}
 		return metadata;
 	}
@@ -178,6 +178,10 @@ public class AutowiredRPCServiceBeanPostProcessor extends InstantiationAwareBean
 			elements.addAll(0, currElements);
 			targetClass = targetClass.getSuperclass();
 		} while (targetClass != null && targetClass != Object.class);
+
+		if (elements.isEmpty()) {
+			return null;
+		}
 		return new InjectionMetadata(clazz, elements);
 	}
 
@@ -196,9 +200,6 @@ public class AutowiredRPCServiceBeanPostProcessor extends InstantiationAwareBean
 	 * Class representing injection information about an annotated field.
 	 */
 	private class AutowiredFieldElement extends InjectionMetadata.InjectedElement {
-		private volatile boolean cached = false;
-		private volatile Object cachedFieldValue;
-
 		public AutowiredFieldElement(Field field) {
 			super(field, null);
 		}
@@ -206,30 +207,29 @@ public class AutowiredRPCServiceBeanPostProcessor extends InstantiationAwareBean
 		@Override
 		protected void inject(Object bean, String beanName, PropertyValues pvs) throws Throwable {
 			Field field = (Field) this.member;
+			Class<?> fieldType = field.getType();
 			try {
 				Object value = null;
-				if (this.cached) {
-					value = this.cachedFieldValue;
+				if (injectionMetadataCache.containsKey(fieldType)) {
+					value = injectionMetadataCache.get(fieldType);
 				} else {
 					// 主动注入
 					if (interceptors != null) {
 						for (AutowiredAnnotedTypeInterceptor interceptor : interceptors) {
 							// 处理此种类型,我们只查找第一个找到可以处理的
-							if (interceptor.accept(field.getDeclaredAnnotations(), field.getType())) {
-								value =
-										interceptor.resolveAutowiredValue(field.getType());
+							if (interceptor.accept(field.getDeclaredAnnotations(), fieldType)) {
+								value = interceptor.resolveAutowiredValue(fieldType);
 								break;
 							}
 						}
 					}
 					// 一旦解析过。我们缓存起来
 					if (value != null) {
-						ReflectionUtils.makeAccessible(field);
-						field.set(bean, value);
-						cached = true;
-						this.cachedFieldValue = value;
+						injectionMetadataCache.put(fieldType, value);
 					}
 				}
+				ReflectionUtils.makeAccessible(field);
+				field.set(bean, value);
 			} catch (Throwable ex) {
 				throw new BeanCreationException("Could not autowire field: " + field, ex);
 			}
