@@ -22,7 +22,7 @@ class JavaSerializer implements com.youzhixu.springremoting.serialize.Serializer
 
 	@Override
 	public byte[] serialize(Object obj) throws Exception {
-		ByteArrayOutputStream bas = new ByteArrayOutputStream();
+		ByteArrayOutputStream bas = new ByteArrayOutputStream(1024);
 		ObjectOutputStream baos = new ObjectOutputStream(bas);
 		baos.writeObject(obj);
 		return bas.toByteArray();

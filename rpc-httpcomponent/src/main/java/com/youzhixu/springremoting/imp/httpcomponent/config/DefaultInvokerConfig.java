@@ -42,7 +42,14 @@ public class DefaultInvokerConfig {
 	public AutowiredAnnotedTypeInterceptor httpServiceInvokerInterceptor() {
 		return new HttpServiceInvokerInterceptor();
 	}
-
+	/**
+	 * <p>
+	 * 处理@HessianService
+	 * </p>
+	 * 
+	 * @since: 1.0.0
+	 * @return
+	 */
 	@Bean
 	public AutowiredAnnotedTypeInterceptor hessianServiceInvokerInterceptor() {
 		return new HessianServiceInvokerInterceptor();

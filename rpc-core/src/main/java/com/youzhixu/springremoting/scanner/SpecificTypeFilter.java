@@ -57,7 +57,6 @@ public class SpecificTypeFilter extends AbstractTypeHierarchyTraversingFilter {
 
 	@Override
 	protected boolean matchClassName(String className) {
-		System.out.println("className=" + className);
 		if (onlyInterface) {
 			return false;
 		}
@@ -66,7 +65,6 @@ public class SpecificTypeFilter extends AbstractTypeHierarchyTraversingFilter {
 
 	@Override
 	protected Boolean matchSuperClass(String superClassName) {
-		System.out.println("superClassName=" + superClassName);
 		if (onlyInterface) {
 			return false;
 		}
@@ -75,7 +73,6 @@ public class SpecificTypeFilter extends AbstractTypeHierarchyTraversingFilter {
 
 	@Override
 	protected Boolean matchInterface(String interfaceName) {
-		System.out.println("interfaceName=" + interfaceName);
 		return targetClasses.contains(interfaceName);
 	}
 
