@@ -3,7 +3,7 @@ package com.youzhixu.springremoting.example.spi;
 import java.util.List;
 
 import com.youzhixu.springremoting.example.provider.model.User;
-import com.youzhixu.springremoting.exporter.annotation.HttpService;
+import com.youzhixu.springremoting.exporter.annotation.HessianService;
 
 
 /**
@@ -16,7 +16,7 @@ import com.youzhixu.springremoting.exporter.annotation.HttpService;
  * @since 1.0.0
  * @Copyright (c) 2015, Youzhixu.com All Rights Reserved.
  */
-@HttpService("user")
+@HessianService("user")
 public interface UserService {
 	/**
 	 * <p>

@@ -11,6 +11,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ByteArrayEntity;
 
 import com.caucho.hessian.client.HessianConnection;
 import com.caucho.hessian.client.HessianConnectionFactory;
@@ -82,11 +83,12 @@ public class HttpComponentHessianConnectionFactory implements HessianConnectionF
  */
 class HttpClientConnection implements HessianConnection {
 	private static final int DEFAULT_BUFFER_SIZE = 1024;
+	private static final String HESSIAN_CONTENT_TYPE= "application/x-hessian";
 	private HttpPost httpPost;
 	/**
 	 * 用于hessian写入自己的协议
 	 */
-	private OutputStream out;
+	private ByteArrayOutputStream out;
 	private HttpClient httpClient;
 	private HttpResponse httpResponse;
 
@@ -119,6 +121,11 @@ class HttpClientConnection implements HessianConnection {
 	 */
 	@Override
 	public void sendRequest() throws IOException {
+		//开始写入数据
+		ByteArrayEntity entity = new ByteArrayEntity(this.out.toByteArray());
+		entity.setContentType(HESSIAN_CONTENT_TYPE);
+		httpPost.setEntity(entity);
+		//发送请求
 		this.httpResponse = this.httpClient.execute(httpPost);
 	}
 
@@ -148,6 +155,7 @@ class HttpClientConnection implements HessianConnection {
 		this.httpPost.releaseConnection();
 	}
 
+	@Override
 	public String getContentEncoding() {
 		Header header = httpResponse.getEntity().getContentEncoding();
 		if (header != null) {

@@ -66,6 +66,8 @@ public class HessianServiceInvokerInterceptor extends AbstractRemotingAutowiredI
 		hp.setConnectionFactory(hessianConnectionFactory);
 		hp.setServiceInterface(autowiredType);
 		hp.setServiceUrl(serviceUrl);
+		//use hessian2
+		hp.setHessian2(true);
 		hp.afterPropertiesSet();
 		return hp.getObject();
 	}
