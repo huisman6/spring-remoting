@@ -96,8 +96,7 @@ public class RPCHttpClientFactoryBean
 									this.httpClientConfig.getRequestConnectionTimeout())
 							.setSocketTimeout(this.httpClientConfig.getReadTimeout())
 							.setConnectTimeout(this.httpClientConfig.getConnectionTimeout())
-							.setCircularRedirectsAllowed(false).setCookieSpec("easy")
-							.setRedirectsEnabled(true).build();
+							.setCircularRedirectsAllowed(false).setRedirectsEnabled(true).build();
 			// SocketConfig socketConfig = SocketConfig.custom()
 			// .setTcpNoDelay(true)
 			// .build();

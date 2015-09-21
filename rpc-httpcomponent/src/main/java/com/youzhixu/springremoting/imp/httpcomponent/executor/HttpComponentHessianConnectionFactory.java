@@ -148,7 +148,6 @@ class HttpClientConnection implements HessianConnection {
 		this.httpPost.releaseConnection();
 	}
 
-	@Override
 	public String getContentEncoding() {
 		Header header = httpResponse.getEntity().getContentEncoding();
 		if (header != null) {

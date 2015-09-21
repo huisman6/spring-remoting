@@ -49,7 +49,6 @@ public class HessianServiceInvokerInterceptor extends AbstractRemotingAutowiredI
 	 */
 	@Override
 	public boolean accept(Annotation[] memberAnnotations, Class<?> autowiredType) {
-		System.out.println("===========>it");
 		return autowiredType.getAnnotation(HessianService.class) != null;
 	}
 

@@ -38,7 +38,7 @@ public abstract class AbstractRemotingAutowiredInterceptor
 	 * @since: 1.0.0
 	 */
 	private String getServiceUrl(Class<?> autowiredType) {
-		return "rpc://" + getAppName(autowiredType) + ServicePath.PREFIX + "/"
+		return "http://" + getAppName(autowiredType) + ServicePath.PREFIX + "/"
 				+ autowiredType.getName();
 	}
 
