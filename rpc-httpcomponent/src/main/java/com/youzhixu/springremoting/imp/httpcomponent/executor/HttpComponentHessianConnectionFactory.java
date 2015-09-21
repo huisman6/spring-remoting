@@ -142,7 +142,7 @@ class HttpClientConnection implements HessianConnection {
 
 	@Override
 	public InputStream getInputStream() throws IOException {
-		return httpResponse.getEntity().getContent();
+		return this.httpResponse.getEntity().getContent();
 	}
 
 	@Override
@@ -152,7 +152,7 @@ class HttpClientConnection implements HessianConnection {
 
 	@Override
 	public void destroy() throws IOException {
-		this.httpPost.releaseConnection();
+		this.httpPost.abort();
 	}
 
 	@Override

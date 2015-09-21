@@ -1,12 +1,18 @@
 package com.youzhixu.springremoting.imp.httpcomponent.factory;
 
 
+import javax.net.ssl.SSLContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContextBuilder;
+import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -85,9 +91,19 @@ public class RPCHttpClientFactoryBean
 	private void prepare() {
 		try {
 			loadConfig();
-			SSLContextBuilder builder = new SSLContextBuilder();
-			builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
-			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build());
+			//本机证书
+			SSLContext sslcontext = SSLContexts.custom().loadTrustMaterial(null,
+	                   new TrustSelfSignedStrategy())
+	           .build();
+			//trust all host
+		   SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+		           sslcontext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+		    //注册https/http
+		   Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
+		           .register("http", PlainConnectionSocketFactory.getSocketFactory())
+		           .register("https", sslsf)
+		           .build();
+	   
 			RequestConfig requestConfig =
 					RequestConfig
 							.custom()
@@ -100,7 +116,7 @@ public class RPCHttpClientFactoryBean
 			// SocketConfig socketConfig = SocketConfig.custom()
 			// .setTcpNoDelay(true)
 			// .build();
-			this.clientManager = new PoolingHttpClientConnectionManager();
+			this.clientManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 			this.clientManager.setMaxTotal(this.httpClientConfig.getMaxConnection());// 连接池最大并发连接数
 			this.clientManager.setDefaultMaxPerRoute(this.httpClientConfig
 					.getMaxConnectionPerRoute());// 单路由(url)最大并发数
