@@ -1,4 +1,4 @@
-package com.lianjia.springremoting.imp.netflix.url;
+package com.lianjia.springremoting.imp.eureka.url;
 
 import java.net.URI;
 

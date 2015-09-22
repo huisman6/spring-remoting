@@ -1,11 +1,11 @@
-package com.lianjia.springremoting.imp.netflix.config;
+package com.lianjia.springremoting.imp.eureka.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import com.lianjia.springremoting.imp.eureka.url.EurekaUrlResolver;
 import com.lianjia.springremoting.imp.httpcomponent.config.DefaultInvokerConfig;
-import com.lianjia.springremoting.imp.netflix.url.EurekaUrlResolver;
 import com.lianjia.springremoting.url.UrlResolver;
 
 /**
