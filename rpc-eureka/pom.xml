@@ -5,14 +5,15 @@
     <artifactId>rpc</artifactId>
     <version>1.0.4</version>
   </parent>
-  <artifactId>rpc-netflix</artifactId>
+  <artifactId>rpc-eureka</artifactId>
   <name>rpc-netflix</name>
   <description>using Ribbon（Client LoadBlance) , Eureka(Service Discover)，Hystrix (circuit)</description>
   <dependencies>
     <dependency>
-		<groupId>com.netflix.ribbon</groupId>
-		<artifactId>ribbon-eureka</artifactId>
-		<version>2.1.0</version>
+		  <groupId>com.netflix.eureka</groupId>
+		  <artifactId>eureka-client</artifactId>
+		  <version>1.2.4</version>
+		  <scope>provided</scope>
 	</dependency>
     <dependency>
 		  <groupId>com.lianjia.springremoting</groupId>

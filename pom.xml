@@ -99,6 +99,6 @@
     	<module>rpc-core</module>
     	<module>rpc-example</module>
     	<module>rpc-httpcomponent</module>
-    	<module>rpc-netflix</module>
+    	<module>rpc-eureka</module>
     </modules>
 </project>
