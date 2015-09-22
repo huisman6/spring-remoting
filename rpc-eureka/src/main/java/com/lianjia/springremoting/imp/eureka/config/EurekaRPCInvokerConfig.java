@@ -16,7 +16,7 @@ import com.lianjia.springremoting.url.UrlResolver;
  */
 @Configuration
 @Import(DefaultInvokerConfig.class)
-public class SimpleRPCInvokerConfig {
+public class EurekaRPCInvokerConfig {
 	@Bean
 	public UrlResolver urlResolver() {
 		return new EurekaUrlResolver();
