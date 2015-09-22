@@ -30,7 +30,7 @@ public class EurekaUrlResolver implements UrlResolver {
 				StringBuilder sb = new StringBuilder(20);
 				// default not secure
 				sb.append(uri.getScheme()).append("://").append(instance.getIPAddr())
-						.append(":" + instance.getPort()).append(uri.getScheme());
+						.append(":" + instance.getPort()).append(uri.getPath());
 				return sb.toString();
 			}
 			throw new IllegalArgumentException("service url =" + serviceUrl + ",没有找到可用的服务器。");
