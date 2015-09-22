@@ -5,11 +5,11 @@
   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                         http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context.xsd">
   <!-- just scan service provider .... -->
-  <context:component-scan base-package="com.youzhixu.springremoting.example.provider"/>
+  <context:component-scan base-package="com.lianjia.springremoting.example.provider"/>
   
   <!--服务提供方的配置 -->
   <!-- import remoting config -->
-  <bean class="com.youzhixu.springremoting.imp.httpcomponent.config.RPCProviderConfig" />
+  <bean class="com.lianjia.springremoting.imp.httpcomponent.config.RPCProviderConfig" />
    <!-- 
  	   java config: 
  	     @Bean

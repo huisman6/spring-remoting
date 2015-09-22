@@ -5,7 +5,7 @@
   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
      <!--service consumer/client  import invoker config -->
- 	 <bean class="com.youzhixu.springremoting.imp.httpcomponent.config.SimpleRPCInvokerConfig"/>
+ 	 <bean class="com.lianjia.springremoting.imp.httpcomponent.config.SimpleRPCInvokerConfig"/>
  	 <!-- 
  	   或者使用java config: 
  	     @Bean
