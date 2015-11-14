@@ -28,7 +28,7 @@ public class SimpleRPCInvokerConfig {
 	 * @return
 	 * @since: 1.0.0
 	 */
-	@Bean(name = "urlResolver")
+	@Bean(name = UrlResolver.BEAN_NAME)
 	public UrlResolver urlResolver() {
 		return new SimpleUrlResolver();
 	}

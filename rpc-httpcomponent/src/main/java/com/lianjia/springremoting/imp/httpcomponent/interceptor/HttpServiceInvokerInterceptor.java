@@ -3,11 +3,14 @@ package com.lianjia.springremoting.imp.httpcomponent.interceptor;
 import java.lang.annotation.Annotation;
 
 import org.apache.http.client.HttpClient;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean;
 
 import com.lianjia.springremoting.exporter.annotation.HttpService;
 import com.lianjia.springremoting.imp.httpcomponent.executor.HttpComponentCustomizeHttpInvokerExecutor;
+import com.lianjia.springremoting.imp.httpcomponent.factory.RPCHttpClientFactoryBean;
 import com.lianjia.springremoting.interceptor.adapter.AbstractRemotingAutowiredInterceptor;
 import com.lianjia.springremoting.serialize.Serializer;
 import com.lianjia.springremoting.url.UrlResolver;
@@ -18,18 +21,17 @@ import com.lianjia.springremoting.url.UrlResolver;
  * @createAt 2015年9月20日 下午12:16:08
  * @Copyright (c) 2015,Youzhixu.com Rights Reserved.
  */
-public class HttpServiceInvokerInterceptor extends AbstractRemotingAutowiredInterceptor {
+public class HttpServiceInvokerInterceptor extends AbstractRemotingAutowiredInterceptor
+		implements BeanFactoryAware {
 	private UrlResolver urlResolver;
 	private HttpClient rpcHttpClient;
 
-	@Autowired
-	public void setUrlResolver(UrlResolver urlResolver) {
-		this.urlResolver = urlResolver;
-	}
 
-	@Autowired
-	public void setRpcHttpClient(HttpClient rpcHttpClient) {
-		this.rpcHttpClient = rpcHttpClient;
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.urlResolver = beanFactory.getBean(UrlResolver.BEAN_NAME, UrlResolver.class);
+		this.rpcHttpClient =
+				beanFactory.getBean(RPCHttpClientFactoryBean.RPC_HTTP_CLIENT, HttpClient.class);
 	}
 
 	public HttpServiceInvokerInterceptor() {

@@ -6,6 +6,7 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,6 +44,11 @@ public class ConsumerTest {
 	// 客户端
 	private static Server server;
 
+	@AfterClass
+	public static void stopWebapp() throws Exception {
+		server.stop();
+	}
+
 	@BeforeClass
 	public static void startWebapp() throws Exception {
 		server = new Server();
@@ -58,8 +64,5 @@ public class ConsumerTest {
 		server.start();
 	}
 
-	// @AfterClass
-	// public static void stopWebapp() throws Exception {
-	// server.stop();
-	// }
+
 }

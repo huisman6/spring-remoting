@@ -12,6 +12,8 @@ package com.lianjia.springremoting.url;
  * @Copyright (c) 2015,Youzhixu.com Rights Reserved.
  */
 public interface UrlResolver {
+	String BEAN_NAME = "rpcInternalURLResolver";
+
 	/**
 	 * <p>
 	 * 根据serviceUrl查找真正的服务请求地址,

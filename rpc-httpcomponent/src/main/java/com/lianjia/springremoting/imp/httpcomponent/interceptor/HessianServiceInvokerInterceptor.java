@@ -6,8 +6,6 @@ import org.apache.http.client.HttpClient;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.BeanFactoryUtils;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.remoting.caucho.HessianProxyFactoryBean;
 
 import com.lianjia.springremoting.exporter.annotation.HessianService;
@@ -34,10 +32,9 @@ public class HessianServiceInvokerInterceptor extends AbstractRemotingAutowiredI
 	 */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.urlResolver = BeanFactoryUtils.beanOfType((ListableBeanFactory) beanFactory,
-				UrlResolver.class, false, false);
+		this.urlResolver = beanFactory.getBean(UrlResolver.BEAN_NAME, UrlResolver.class);
 		this.rpcHttpClient =
-				(HttpClient) beanFactory.getBean(RPCHttpClientFactoryBean.RPC_HTTP_CLIENT);
+				beanFactory.getBean(RPCHttpClientFactoryBean.RPC_HTTP_CLIENT, HttpClient.class);
 	}
 
 	public HessianServiceInvokerInterceptor() {
@@ -67,7 +64,7 @@ public class HessianServiceInvokerInterceptor extends AbstractRemotingAutowiredI
 	public Object doResolveValue(Class<?> autowiredType, String serviceUrl) {
 		HessianProxyFactoryBean hp = new HessianProxyFactoryBean();
 		HttpComponentHessianConnectionFactory hessianConnectionFactory =
-				new HttpComponentHessianConnectionFactory(urlResolver, this.rpcHttpClient);
+				new HttpComponentHessianConnectionFactory(this.urlResolver, this.rpcHttpClient);
 		hp.setConnectionFactory(hessianConnectionFactory);
 		hp.setServiceInterface(autowiredType);
 		hp.setServiceUrl(serviceUrl);
