@@ -12,7 +12,7 @@ import java.io.Serializable;
  * @createAt 2015年9月20日 下午2:05:51
  * @Copyright (c) 2015,Youzhixu.com Rights Reserved.
  */
-class HttpClientConfig implements Serializable {
+public class HttpClientConfig implements Serializable {
 	private static final long serialVersionUID = 1L;
 	/**
 	 * 连接超时

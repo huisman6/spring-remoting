@@ -31,10 +31,7 @@ import com.lianjia.springremoting.interceptor.ServiceExporterRegistryInterceptor
  * @Copyright (c) 2015, Youzhixu.com All Rights Reserved.
  */
 public class ServiceExporterBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter
-		implements
-			PriorityOrdered,
-			BeanFactoryAware,
-			InitializingBean {
+		implements PriorityOrdered, BeanFactoryAware, InitializingBean {
 	private final Log logger = LogFactory.getLog(getClass());
 	private ConfigurableListableBeanFactory beanFactory;
 	private final List<ServiceExporterRegistryInterceptor> interceptors = new ArrayList<>(2);
@@ -45,9 +42,9 @@ public class ServiceExporterBeanPostProcessor extends InstantiationAwareBeanPost
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		// we found all Sub interceptors
-		Map<String, ServiceExporterRegistryInterceptor> allFoundInterceptors =
-				this.beanFactory.getBeansOfType(ServiceExporterRegistryInterceptor.class);
+		// we found all Sub interceptors,do not eager init factory bean
+		Map<String, ServiceExporterRegistryInterceptor> allFoundInterceptors = this.beanFactory
+				.getBeansOfType(ServiceExporterRegistryInterceptor.class, true, false);
 		if (allFoundInterceptors != null && !allFoundInterceptors.isEmpty()) {
 			for (ServiceExporterRegistryInterceptor sub : allFoundInterceptors.values()) {
 				this.interceptors.add(sub);

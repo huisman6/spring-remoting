@@ -1,5 +1,6 @@
 package com.lianjia.springremoting.invoker.processor;
 
+import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
@@ -44,12 +45,8 @@ import com.lianjia.springremoting.invoker.annotation.Remoting;
  * @createAt 2015年9月17日 下午11:12:16
  * @Copyright (c) 2015, Dooioo All Rights Reserved.
  */
-public class AutowiredRPCServiceBeanPostProcessor
-		extends InstantiationAwareBeanPostProcessorAdapter
-		implements
-			BeanFactoryAware,
-			InitializingBean,
-			PriorityOrdered {
+public class AutowiredRPCServiceBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter
+		implements BeanFactoryAware, InitializingBean, PriorityOrdered {
 	private final Log logger = LogFactory.getLog(getClass());
 
 	private final Set<Class<? extends Annotation>> autowiredAnnotationTypes =
@@ -68,11 +65,13 @@ public class AutowiredRPCServiceBeanPostProcessor
 		this.addCustomizedAnnotation(Remoting.class);
 	}
 
+
+
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		// we found all Sub interceptors
+		// we found all Sub interceptors,do not eager init factory bean
 		Map<String, AutowiredAnnotedTypeInterceptor> allFoundInterceptors =
-				this.beanFactory.getBeansOfType(AutowiredAnnotedTypeInterceptor.class);
+				this.beanFactory.getBeansOfType(AutowiredAnnotedTypeInterceptor.class, true, false);
 		if (allFoundInterceptors != null && !allFoundInterceptors.isEmpty()) {
 			for (AutowiredAnnotedTypeInterceptor sub : allFoundInterceptors.values()) {
 				this.interceptors.add(sub);
@@ -124,21 +123,23 @@ public class AutowiredRPCServiceBeanPostProcessor
 		return Ordered.LOWEST_PRECEDENCE;
 	}
 
+
 	@Override
-	public Object postProcessAfterInitialization(Object bean, String beanName)
-			throws BeansException {
+	public PropertyValues postProcessPropertyValues(PropertyValues pvs, PropertyDescriptor[] pds,
+			Object bean, String beanName) throws BeansException {
 		Class<?> clazz = bean.getClass();
 		InjectionMetadata metadata = findAutowiringMetadata(clazz.getName(), clazz);
 		if (metadata != null) {
 			try {
-				metadata.inject(bean, null, null);
+				metadata.inject(bean, null, pvs);
 			} catch (Throwable ex) {
 				throw new BeanCreationException(
 						"Injection of autowired dependencies failed for class [" + clazz + "]", ex);
 			}
 		}
-		return bean;
+		return pvs;
 	}
+
 
 	private InjectionMetadata findAutowiringMetadata(String beanName, Class<?> clazz) {
 		// 查找需要注入的字段====

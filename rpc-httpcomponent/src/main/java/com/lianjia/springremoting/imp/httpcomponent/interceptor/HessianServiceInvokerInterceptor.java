@@ -6,11 +6,13 @@ import org.apache.http.client.HttpClient;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.BeanFactoryUtils;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.remoting.caucho.HessianProxyFactoryBean;
 
 import com.lianjia.springremoting.exporter.annotation.HessianService;
 import com.lianjia.springremoting.imp.httpcomponent.executor.HttpComponentHessianConnectionFactory;
-import com.lianjia.springremoting.imp.httpcomponent.factory.RPCHttpClientFactoryBean;
+import com.lianjia.springremoting.imp.httpcomponent.factory.RPCHttpClientHolder;
 import com.lianjia.springremoting.interceptor.adapter.AbstractRemotingAutowiredInterceptor;
 import com.lianjia.springremoting.serialize.Serializer;
 import com.lianjia.springremoting.url.UrlResolver;
@@ -22,17 +24,24 @@ import com.lianjia.springremoting.url.UrlResolver;
  * @Copyright (c) 2015,Youzhixu.com Rights Reserved.
  */
 public class HessianServiceInvokerInterceptor extends AbstractRemotingAutowiredInterceptor
-		implements
-			BeanFactoryAware {
+		implements BeanFactoryAware {
 	private UrlResolver urlResolver;
 	private HttpClient rpcHttpClient;
 
-
+	/**
+	 * 因为HessianServiceInvokerInterceptor会优先实例化，导致@autowired没有被BeanPostProcessor处理（not getting
+	 * processed by all BeanPostProcessors）
+	 */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.urlResolver = beanFactory.getBean(UrlResolver.class);
+		this.urlResolver = BeanFactoryUtils.beanOfType((ListableBeanFactory) beanFactory,
+				UrlResolver.class, false, true);
 		this.rpcHttpClient =
-				(HttpClient) beanFactory.getBean(RPCHttpClientFactoryBean.RPC_HTTP_CLIENT);
+				(HttpClient) beanFactory.getBean(RPCHttpClientHolder.RPC_INTERNAL_HTTP_CLIENT);
+		// FactoryBean，提前实例化
+		// this.rpcHttpClient =
+		// (HttpClient) BeanFactoryUtils.bean((ListableBeanFactory) beanFactory,
+		// RPCHttpClientFactoryBean.class, false, true);
 	}
 
 	public HessianServiceInvokerInterceptor() {
@@ -76,7 +85,5 @@ public class HessianServiceInvokerInterceptor extends AbstractRemotingAutowiredI
 	public Serializer getSerializer(Class<?> autowiredType) {
 		return autowiredType.getAnnotation(HessianService.class).serializer().provider();
 	}
-
-
 
 }

@@ -34,11 +34,7 @@ import org.springframework.core.env.Environment;
  * @Copyright (c) 2015,Youzhixu.com Rights Reserved.
  */
 public class RPCHttpClientFactoryBean
-		implements
-			EnvironmentAware,
-			FactoryBean<HttpClient>,
-			InitializingBean,
-			DisposableBean {
+		implements EnvironmentAware, FactoryBean<HttpClient>, InitializingBean, DisposableBean {
 	private final Log logger = LogFactory.getLog(this.getClass());
 	private CloseableHttpClient httpclient;
 	private HttpClientConfig httpClientConfig;
@@ -69,20 +65,20 @@ public class RPCHttpClientFactoryBean
 	private void loadConfig() {
 		httpClientConfig = new HttpClientConfig();
 		// 连接远程主机超时
-		httpClientConfig.setConnectionTimeout(Integer.parseInt(env.getProperty(
-				"rpc.httpclient.connectionTimeout", "15000")));
+		httpClientConfig.setConnectionTimeout(
+				Integer.parseInt(env.getProperty("rpc.httpclient.connectionTimeout", "15000")));
 		// socket读取超时
-		httpClientConfig.setReadTimeout(Integer.parseInt(env.getProperty(
-				"rpc.httpclient.readTimeout", "20000")));
+		httpClientConfig.setReadTimeout(
+				Integer.parseInt(env.getProperty("rpc.httpclient.readTimeout", "20000")));
 		// 请求获取连接池中空闲连接的超时时间
-		httpClientConfig.setRequestConnectionTimeout(Integer.parseInt(env.getProperty(
-				"rpc.httpclient.requestConnectionTimeout", "8000")));
+		httpClientConfig.setRequestConnectionTimeout(Integer
+				.parseInt(env.getProperty("rpc.httpclient.requestConnectionTimeout", "8000")));
 		// 最大连接数
-		httpClientConfig.setMaxConnection(Integer.parseInt(env.getProperty(
-				"rpc.httpclient.maxConnection", "600")));
+		httpClientConfig.setMaxConnection(
+				Integer.parseInt(env.getProperty("rpc.httpclient.maxConnection", "600")));
 		// 每个主机最大并发100
-		httpClientConfig.setMaxConnectionPerRoute(Integer.parseInt(env.getProperty(
-				"rpc.httpclient.maxConnectionPerRoute", "100")));
+		httpClientConfig.setMaxConnectionPerRoute(
+				Integer.parseInt(env.getProperty("rpc.httpclient.maxConnectionPerRoute", "100")));
 		if (logger.isInfoEnabled()) {
 			logger.info("init httpclient配置====================》" + this.httpClientConfig);
 		}
@@ -92,40 +88,34 @@ public class RPCHttpClientFactoryBean
 		try {
 			loadConfig();
 			// 本机证书
-			SSLContext sslcontext =
-					SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy())
-							.build();
+			SSLContext sslcontext = SSLContexts.custom()
+					.loadTrustMaterial(null, new TrustSelfSignedStrategy()).build();
 			// trust all host
-			SSLConnectionSocketFactory sslsf =
-					new SSLConnectionSocketFactory(sslcontext,
-							SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext,
+					SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 			// 注册https/http
 			Registry<ConnectionSocketFactory> socketFactoryRegistry =
 					RegistryBuilder.<ConnectionSocketFactory>create()
 							.register("http", PlainConnectionSocketFactory.getSocketFactory())
 							.register("https", sslsf).build();
 
-			RequestConfig requestConfig =
-					RequestConfig
-							.custom()
-							// 连接池请求连接的时间
-							.setConnectionRequestTimeout(
-									this.httpClientConfig.getRequestConnectionTimeout())
-							.setSocketTimeout(this.httpClientConfig.getReadTimeout())
-							.setConnectTimeout(this.httpClientConfig.getConnectionTimeout())
-							.setCircularRedirectsAllowed(false).setRedirectsEnabled(true).build();
+			RequestConfig requestConfig = RequestConfig.custom()
+					// 连接池请求连接的时间
+					.setConnectionRequestTimeout(
+							this.httpClientConfig.getRequestConnectionTimeout())
+					.setSocketTimeout(this.httpClientConfig.getReadTimeout())
+					.setConnectTimeout(this.httpClientConfig.getConnectionTimeout())
+					.setCircularRedirectsAllowed(false).setRedirectsEnabled(true).build();
 			// SocketConfig socketConfig = SocketConfig.custom()
 			// .setTcpNoDelay(true)
 			// .build();
 			this.clientManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 			this.clientManager.setMaxTotal(this.httpClientConfig.getMaxConnection());// 连接池最大并发连接数
-			this.clientManager.setDefaultMaxPerRoute(this.httpClientConfig
-					.getMaxConnectionPerRoute());// 单路由(url)最大并发数
+			this.clientManager
+					.setDefaultMaxPerRoute(this.httpClientConfig.getMaxConnectionPerRoute());// 单路由(url)最大并发数
 
-			this.httpclient =
-					HttpClients.custom().setConnectionManager(this.clientManager)
-							.setSSLSocketFactory(sslsf).setDefaultRequestConfig(requestConfig)
-							.build();
+			this.httpclient = HttpClients.custom().setConnectionManager(this.clientManager)
+					.setSSLSocketFactory(sslsf).setDefaultRequestConfig(requestConfig).build();
 		} catch (Exception e) {
 			throw new IllegalStateException("httpclient init error:" + this.httpClientConfig);
 		}
